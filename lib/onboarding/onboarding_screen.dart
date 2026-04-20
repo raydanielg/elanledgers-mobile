@@ -14,17 +14,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingData> _pages = [
     OnboardingData(
-      image: 'lib/images/fun-3d-illustration-american-referee.jpg',
+      image: 'lib/images/big-data-architecture-abstract-concept-illustration.png',
       title: 'Run Your Shop With Ease',
       description: 'Products, customers, discounts, deliveries, all organized for you. Manage without stress',
     ),
     OnboardingData(
-      image: 'lib/images/fun-3d-illustration-american-referee.jpg',
+      image: 'lib/images/big-data-architecture-abstract-concept-illustration.png',
       title: 'Grow Your Business',
       description: 'Track sales, manage inventory, and get insights to help your business grow faster',
     ),
     OnboardingData(
-      image: 'lib/images/fun-3d-illustration-american-referee.jpg',
+      image: 'lib/images/big-data-architecture-abstract-concept-illustration.png',
       title: 'Connect With Customers',
       description: 'Build lasting relationships with your customers and keep them coming back',
     ),
