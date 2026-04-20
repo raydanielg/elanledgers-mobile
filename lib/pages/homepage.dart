@@ -11,6 +11,8 @@ import 'package:duka_app/pages/warehouse.dart';
 import 'package:duka_app/pages/reports.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
+import 'package:duka_app/services/dashboard_service.dart';
+import 'package:duka_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
@@ -27,12 +29,30 @@ class _HomepageState extends State<Homepage> {
   final TextEditingController _shopSearchController = TextEditingController();
   bool _showShopSearch = false;
   bool _languageInitialized = false;
+  bool _isLoading = true;
 
   final PageController _pageController = PageController();
   Timer? _timer;
   int _currentPage = 0;
 
-  final List<Map<String, dynamic>> summary = [
+  // Services
+  final DashboardService _dashboardService = DashboardService();
+  final AuthService _authService = AuthService();
+
+  // API Data
+  Map<String, dynamic> _userData = {};
+  Map<String, dynamic> _shopData = {};
+  List<dynamic> _shopsList = [];
+  
+  // Drawer counts
+  int _shopsCount = 0;
+  int _membersCount = 0;
+  int _customersCount = 0;
+  int _suppliersCount = 0;
+  int _productsCount = 0;
+
+  // Summary data from API
+  List<Map<String, dynamic>> summary = [
     {"title": "toReceive", "amount": "0.00", "color": Colors.blue.shade500},
     {"title": "toPay", "amount": "0.00", "color": Colors.blue.shade800},
     {"title": "totalSales", "amount": "0.00", "color": Colors.blue.shade200},
@@ -243,10 +263,23 @@ class _HomepageState extends State<Homepage> {
 
   // ===============SHOW AVAILABLE SHOPS DIALOG ==================
   void _showShopsDialog() {
+    // Convert API shops data to string list
+    final List<String> apiShops = _shopsList.map((shop) {
+      if (shop is Map) {
+        final name = shop['shop_name']?.toString() ?? 'Unknown Shop';
+        final id = shop['shop_id']?.toString() ?? '';
+        return '$name - ID: $id';
+      }
+      return shop.toString();
+    }).toList();
+    
+    // Fallback to local shops if API data is empty
+    final displayShops = apiShops.isNotEmpty ? apiShops : shops;
+    
     final query = _shopSearchController.text.trim().toLowerCase();
     final visibleShops = query.isEmpty
-        ? shops
-        : shops.where((shop) => shop.toLowerCase().contains(query)).toList();
+        ? displayShops
+        : displayShops.where((shop) => shop.toLowerCase().contains(query)).toList();
 
     showDialog(
       context: context,
@@ -420,7 +453,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   // =============== SHOPS LIST =================
-
+  // Default fallback shops (used when API fails)
   String activeShop = "TRAVELLER CREATIVE DESIGN - ID: S0031";
 
   List<String> shops = [
@@ -433,6 +466,125 @@ class _HomepageState extends State<Homepage> {
   void initState() {
     super.initState();
     startAutoSlide();
+    _fetchDashboardData();
+  }
+
+  // Fetch all dashboard data from API
+  Future<void> _fetchDashboardData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Fetch all data in parallel
+      final results = await Future.wait([
+        _dashboardService.getSessionUser(),
+        _dashboardService.getSessionShop(),
+        _dashboardService.getMyShops(),
+        _dashboardService.getDashboardSummary(),
+        _dashboardService.getShops(),
+        _dashboardService.getTeam(),
+        _dashboardService.getCustomers(),
+        _dashboardService.getSuppliers(),
+        _dashboardService.getProducts(),
+      ]);
+
+      final userResult = results[0];
+      final shopResult = results[1];
+      final shopsListResult = results[2];
+      final summaryResult = results[3];
+      final shopsCountResult = results[4];
+      final teamResult = results[5];
+      final customersResult = results[6];
+      final suppliersResult = results[7];
+      final productsResult = results[8];
+
+      setState(() {
+        // User data
+        if (userResult['success'] && userResult['data'] != null) {
+          _userData = userResult['data']['result'] ?? userResult['data'];
+        }
+
+        // Shop data
+        if (shopResult['success'] && shopResult['data'] != null) {
+          _shopData = shopResult['data']['result'] ?? shopResult['data'];
+        }
+
+        // Shops list
+        if (shopsListResult['success'] && shopsListResult['data'] != null) {
+          final shopsData = shopsListResult['data']['result'] ?? shopsListResult['data'];
+          if (shopsData is List) {
+            _shopsList = shopsData;
+          }
+        }
+
+        // Summary data
+        if (summaryResult['success'] && summaryResult['data'] != null) {
+          final summaryData = summaryResult['data']['result'] ?? summaryResult['data'];
+          if (summaryData is Map) {
+            summary = [
+              {
+                "title": "toReceive",
+                "amount": _formatAmount(summaryData['to_receive'] ?? summaryData['toReceive'] ?? 0),
+                "color": Colors.blue.shade500
+              },
+              {
+                "title": "toPay",
+                "amount": _formatAmount(summaryData['to_pay'] ?? summaryData['toPay'] ?? 0),
+                "color": Colors.blue.shade800
+              },
+              {
+                "title": "totalSales",
+                "amount": _formatAmount(summaryData['total_sales'] ?? summaryData['totalSales'] ?? 0),
+                "color": Colors.blue.shade200
+              },
+            ];
+          }
+        }
+
+        // Drawer counts
+        _shopsCount = _extractCount(shopsCountResult);
+        _membersCount = _extractCount(teamResult);
+        _customersCount = _extractCount(customersResult);
+        _suppliersCount = _extractCount(suppliersResult);
+        _productsCount = _extractCount(productsResult);
+      });
+    } catch (e) {
+      print('Error fetching dashboard data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Helper to format amount
+  String _formatAmount(dynamic amount) {
+    if (amount == null) return "0.00";
+    if (amount is num) {
+      return amount.toStringAsFixed(2);
+    }
+    if (amount is String) {
+      final parsed = double.tryParse(amount);
+      return parsed?.toStringAsFixed(2) ?? "0.00";
+    }
+    return "0.00";
+  }
+
+  // Helper to extract count from API response
+  int _extractCount(Map<String, dynamic> result) {
+    if (!result['success']) return 0;
+    final data = result['data'];
+    if (data == null) return 0;
+    
+    final resultData = data['result'] ?? data;
+    if (resultData is List) {
+      return resultData.length;
+    }
+    if (resultData is Map) {
+      return resultData['count'] ?? resultData['total'] ?? 0;
+    }
+    return 0;
   }
 
   @override
@@ -466,16 +618,11 @@ class _HomepageState extends State<Homepage> {
       ),
     );
 
-    await Future.delayed(const Duration(seconds: 1));
+    // Fetch fresh data from API
+    await _fetchDashboardData();
+    
     if (!mounted) return;
-
     Navigator.of(context, rootNavigator: true).pop();
-    if (!mounted) return;
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const Homepage()),
-    );
   }
 
   @override
@@ -583,8 +730,10 @@ class _HomepageState extends State<Homepage> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.pop(context);
+                          // Clear auth token
+                          await _authService.logout();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -625,11 +774,13 @@ class _HomepageState extends State<Homepage> {
               CircleAvatar(
                 radius: 36.0,
                 backgroundColor: Colors.white,
-                backgroundImage: AssetImage('lib/images/dukaapplogo.png'),
+                backgroundImage: _userData['photo'] != null
+                    ? NetworkImage(_userData['photo'])
+                    : const AssetImage('lib/images/dukaapplogo.png') as ImageProvider,
               ),
               const SizedBox(height: 10.0),
               Text(
-                'WILSON ISHEKANYORO',
+                _userData['fullname']?.toString() ?? 'WILSON ISHEKANYORO',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.0,
@@ -639,7 +790,7 @@ class _HomepageState extends State<Homepage> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                'User ID: U0029',
+                'User ID: ${_userData['user_id']?.toString() ?? 'U0029'}',
                 style: TextStyle(
                   fontSize: 12.0,
                   color: Colors.grey[600],
@@ -663,11 +814,11 @@ class _HomepageState extends State<Homepage> {
                       onTap: () => Navigator.pop(context),
                     ),
                     const SizedBox(height: 6.0),
-                    _buildCountTile(l10n.shops, 1),
-                    _buildCountTile(l10n.members, 1),
-                    _buildCountTile(l10n.customers, 0),
-                    _buildCountTile(l10n.suppliers, 0),
-                    _buildCountTile(l10n.products, 2),
+                    _buildCountTile(l10n.shops, _shopsCount),
+                    _buildCountTile(l10n.members, _membersCount),
+                    _buildCountTile(l10n.customers, _customersCount),
+                    _buildCountTile(l10n.suppliers, _suppliersCount),
+                    _buildCountTile(l10n.products, _productsCount),
                     const SizedBox(height: 12.0),
                     Divider(color: Colors.grey[400]),
                   ],
@@ -718,8 +869,10 @@ class _HomepageState extends State<Homepage> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(context);
+                                  // Clear auth token
+                                  await _authService.logout();
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -761,6 +914,22 @@ class _HomepageState extends State<Homepage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Loading indicator
+            if (_isLoading)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: const Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.lightBlue,
+                    ),
+                  ),
+                ),
+              ),
             if (_showShopSearch) ...[
               TextField(
                 controller: _shopSearchController,
@@ -791,7 +960,7 @@ class _HomepageState extends State<Homepage> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  border: BoxBorder.all(color: Colors.lightBlue),
+                  border: Border.all(color: Colors.lightBlue),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -799,7 +968,7 @@ class _HomepageState extends State<Homepage> {
                   children: [
                     Expanded(
                       child: Text(
-                        "${l10n.active}: $activeShop",
+                        "${l10n.active}: ${_shopData['shop_name']?.toString() ?? activeShop}",
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.blue,

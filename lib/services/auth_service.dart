@@ -20,16 +20,26 @@ class AuthService {
 
       final data = response.data;
 
-      // Save token if provided
-      if (data is Map && data.containsKey('token')) {
-        await _api.saveToken(data['token']);
-      }
+      // Check if API returned success status
+      final bool isSuccess = data['status'] == true || data['statusCode'] == 200;
+      
+      if (isSuccess) {
+        // Save token if provided
+        if (data is Map && data.containsKey('token') && data['token'] != null) {
+          await _api.saveToken(data['token']);
+        }
 
-      return {
-        'success': true,
-        'data': data,
-        'message': data['message'] ?? 'Login successful',
-      };
+        return {
+          'success': true,
+          'data': data,
+          'message': data['message'] ?? 'Login successful',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Login failed',
+        };
+      }
     } catch (e) {
       return {
         'success': false,
@@ -62,16 +72,26 @@ class AuthService {
 
       final data = response.data;
 
-      // Save token if provided
-      if (data is Map && data.containsKey('token')) {
-        await _api.saveToken(data['token']);
-      }
+      // Check if API returned success status
+      final bool isSuccess = data['status'] == true || data['statusCode'] == 200;
+      
+      if (isSuccess) {
+        // Save token if provided
+        if (data is Map && data.containsKey('token') && data['token'] != null) {
+          await _api.saveToken(data['token']);
+        }
 
-      return {
-        'success': true,
-        'data': data,
-        'message': data['message'] ?? 'Registration successful',
-      };
+        return {
+          'success': true,
+          'data': data,
+          'message': data['message'] ?? 'Registration successful',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Registration failed',
+        };
+      }
     } catch (e) {
       return {
         'success': false,
@@ -94,10 +114,13 @@ class AuthService {
 
       final data = response.data;
 
+      // Check if API returned success status
+      final bool isSuccess = data['status'] == true || data['statusCode'] == 200;
+      
       return {
-        'success': true,
+        'success': isSuccess,
         'data': data,
-        'message': data['message'] ?? 'Reset link sent successfully',
+        'message': data['message'] ?? (isSuccess ? 'Reset link sent successfully' : 'Failed to send reset link'),
       };
     } catch (e) {
       return {
