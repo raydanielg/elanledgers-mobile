@@ -13,13 +13,13 @@ class ResetPasswordPage extends StatefulWidget {
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _userIdController = TextEditingController();
+  final _emailController = TextEditingController();
   String _selectedLanguage = 'English';
   bool _languageInitialized = false;
 
   @override
   void dispose() {
-    _userIdController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -35,317 +35,190 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          // Background
-          Container(color: Colors.grey[100]),
-          // Main content
-          SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                // Back button
+                Row(
                   children: [
-                    // Language Dropdown at the top
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24.0, right: 16.0),
-                      child: Align(
-                        alignment: Alignment.topRight,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0,
-                            vertical: 2.0,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[400]!),
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: DropdownButton<String>(
-                            value: _selectedLanguage,
-                            isDense: true,
-                            iconSize: 18,
-                            underline: const SizedBox(),
-                            items: ['English', 'Swahili']
-                                .map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value == 'Swahili'
-                                          ? l10n.languageSwahili
-                                          : l10n.languageEnglish,
-                                      style: const TextStyle(
-                                        fontSize: 12.0,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  );
-                                })
-                                .toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                _selectedLanguage = newValue ?? 'English';
-                              });
-                              final locale = _selectedLanguage == 'Swahili'
-                                  ? const Locale('sw')
-                                  : const Locale('en');
-                              AppLocale.setLocale(context, locale);
-                            },
-                          ),
-                        ),
-                      ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+                      padding: EdgeInsets.zero,
                     ),
-                    // Spacer to push content to center
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                              vertical: 20.0,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Logo
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: 30.0,
-                                    top: 40.0,
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'lib/images/dukaapplogo.png',
-                                      height: 100.0,
-                                      width: 100.0,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                // Title
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 30.0),
-                                  child: Center(
-                                    child: Text(
-                                      _selectedLanguage == 'English'
-                                          ? 'Reset your Password'
-                                          : 'Sezesha Neno lako la Siri',
-                                      style: const TextStyle(
-                                        fontSize: 18.0,
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Form
-                                Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      // UserId/Email/Phone TextField
-                                      TextFormField(
-                                        controller: _userIdController,
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        textInputAction: TextInputAction.done,
-                                        decoration: InputDecoration(
-                                          hintText:
-                                              _selectedLanguage == 'English'
-                                              ? 'Enter UserId, Email or Phone'
-                                              : 'Ingiza Kitambulisho, Barua au Simu',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey[400],
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              6.0,
-                                            ),
-                                            borderSide: BorderSide(
-                                              color: Colors.blue[300]!,
-                                            ),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              6.0,
-                                            ),
-                                            borderSide: BorderSide(
-                                              color: Colors.blue[300]!,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              6.0,
-                                            ),
-                                            borderSide: BorderSide(
-                                              color: Colors.blue[500]!,
-                                              width: 2.0,
-                                            ),
-                                          ),
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 16.0,
-                                                vertical: 14.0,
-                                              ),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return _selectedLanguage ==
-                                                    'English'
-                                                ? 'This field is required'
-                                                : 'Hili sehemu ni lazima';
-                                          }
-                                          if (value.length < 3) {
-                                            return _selectedLanguage ==
-                                                    'English'
-                                                ? 'Please enter valid UserId, Email or Phone'
-                                                : 'Tafadhali ingiza kitambulisho, barua au simu halali';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                      // Buttons Row
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 28.0,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            // Back to Login Button
-                                            Expanded(
-                                              child: SizedBox(
-                                                height: 44.0,
-                                                child: TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const LoginPage(),
-                                                      ),
-                                                    );
-                                                  },
-                                                  style: TextButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.cyan[400],
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            6.0,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.arrow_back_ios,
-                                                        size: 14.0,
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 6.0,
-                                                      ),
-                                                      Text(
-                                                        _selectedLanguage ==
-                                                                'English'
-                                                            ? 'Login'
-                                                            : 'Ingia',
-                                                        style: const TextStyle(
-                                                          fontSize: 13.0,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12.0),
-                                            // Reset Button
-                                            Expanded(
-                                              child: SizedBox(
-                                                height: 44.0,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    if (_formKey.currentState!
-                                                        .validate()) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            _selectedLanguage ==
-                                                                    'English'
-                                                                ? 'Reset link sent to your email'
-                                                                : 'Kiungo cha kusezesha kimefungwa kwenye barua pepe yako',
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.lightBlue,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            6.0,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    _selectedLanguage ==
-                                                            'English'
-                                                        ? 'Reset'
-                                                        : 'Sezesha',
-                                                    style: const TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                    Text(
+                      _selectedLanguage == 'English' ? 'Back' : 'Rudi',
+                      style: TextStyle(
+                        color: Colors.green.shade600,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 30),
+                // Title
+                Text(
+                  _selectedLanguage == 'English' ? 'Reset Password 🔐' : 'Rekebisha Neno la Siri 🔐',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Subtitle
+                Text(
+                  _selectedLanguage == 'English'
+                      ? 'Enter your email and we will send you a link to reset your password'
+                      : 'Weka barua pepe yako na tutakutumia kiungo cha kurekebisha neno la siri',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                // Form
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Email label
+                      Text(
+                        _selectedLanguage == 'English' ? 'Email' : 'Barua Pepe',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Email field
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: Colors.green.shade400,
+                            size: 20,
+                          ),
+                          hintText: _selectedLanguage == 'English'
+                              ? 'Enter your email'
+                              : 'Weka barua pepe yako',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: Colors.green.shade400,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return _selectedLanguage == 'English'
+                                ? 'Email is required'
+                                : 'Barua pepe inahitajika';
+                          }
+                          if (!value.contains('@')) {
+                            return _selectedLanguage == 'English'
+                                ? 'Please enter a valid email'
+                                : 'Weka barua pepe halali';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      // Send Reset Link Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    _selectedLanguage == 'English'
+                                        ? 'Reset link sent to your email!'
+                                        : 'Kiungo cha kurekebisha kimetumwa kwenye barua pepe yako!',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            _selectedLanguage == 'English'
+                                ? 'Send Reset Link'
+                                : 'Tuma Kiungo',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Back to login link
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Text(
+                            _selectedLanguage == 'English'
+                                ? 'Back to Sign In'
+                                : 'Rudi kwenye Kuingia',
+                            style: TextStyle(
+                              color: Colors.green.shade600,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

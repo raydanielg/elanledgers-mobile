@@ -2,10 +2,18 @@
 import 'package:duka_app/pages/login.dart';
 import 'package:duka_app/onboarding/onboarding_screen.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
+import 'package:duka_app/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize API service
+  final apiService = ApiService();
+  apiService.init();
+  await apiService.loadToken();
+  
   runApp(const MyApp());
 }
 
