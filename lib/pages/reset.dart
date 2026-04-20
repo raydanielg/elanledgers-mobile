@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
+import 'package:duka_app/services/auth_service.dart';
 import 'login.dart';
 
 class ResetPasswordPage extends StatefulWidget {
@@ -14,8 +15,10 @@ class ResetPasswordPage extends StatefulWidget {
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final AuthService _authService = AuthService();
   String _selectedLanguage = 'English';
   bool _languageInitialized = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -162,19 +165,30 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    _selectedLanguage == 'English'
-                                        ? 'Reset link sent to your email!'
-                                        : 'Kiungo cha kurekebisha kimetumwa kwenye barua pepe yako!',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    
+                                    final result = await _authService.sendResetLink(
+                                      username: _emailController.text.trim(),
+                                    );
+                                    
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message']),
+                                        backgroundColor: result['success'] ? Colors.green : Colors.red,
+                                      ),
+                                    );
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -183,15 +197,24 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             ),
                             elevation: 0,
                           ),
-                          child: Text(
-                            _selectedLanguage == 'English'
-                                ? 'Send Reset Link'
-                                : 'Tuma Kiungo',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  _selectedLanguage == 'English'
+                                      ? 'Send Reset Link'
+                                      : 'Tuma Kiungo',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 24),

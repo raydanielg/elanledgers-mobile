@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
+import 'package:duka_app/services/auth_service.dart';
 import 'login.dart';
+import 'homepage.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -18,11 +20,13 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   String _selectedLanguage = 'English';
   bool _obscurePassword = true;
   bool _agreeToTerms = false;
   bool _languageInitialized = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -199,31 +203,62 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              if (!_agreeToTerms) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      _selectedLanguage == 'English'
-                                          ? 'Please agree to Terms of Service'
-                                          : 'Tafadhali kubali Masharti ya Huduma',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    _selectedLanguage == 'English'
-                                        ? 'Registration successful!'
-                                        : 'Usajili umefanikiwa!',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    if (!_agreeToTerms) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            _selectedLanguage == 'English'
+                                                ? 'Please agree to Terms of Service'
+                                                : 'Tafadhali kubali Masharti ya Huduma',
+                                          ),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    
+                                    final result = await _authService.register(
+                                      fullName: _fullNameController.text.trim(),
+                                      shopName: _shopNameController.text.trim(),
+                                      phone: _phoneController.text.trim(),
+                                      email: _emailController.text.trim(),
+                                      password: _passwordController.text,
+                                    );
+                                    
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    
+                                    if (result['success']) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(result['message']),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const Homepage(),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(result['message']),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -232,13 +267,22 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             elevation: 0,
                           ),
-                          child: Text(
-                            _selectedLanguage == 'English' ? 'Register' : 'Jisajili',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  _selectedLanguage == 'English' ? 'Register' : 'Jisajili',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 24),
