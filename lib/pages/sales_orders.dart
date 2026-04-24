@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/locale_utils.dart';
+import 'package:duka_app/services/sales_service.dart';
 
 class SalesOrdersPage extends StatefulWidget {
   const SalesOrdersPage({super.key});
@@ -13,7 +14,15 @@ class SalesOrdersPage extends StatefulWidget {
 class _SalesOrdersPageState extends State<SalesOrdersPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  final SalesService _salesService = SalesService();
   bool _filterDialogOpen = false;
+
+  // API Data
+  List<dynamic> _salesData = [];
+  List<dynamic> _ordersData = [];
+  List<dynamic> _invoicesData = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   bool _customerEnabled = true;
   bool _cashierEnabled = false;
@@ -156,6 +165,56 @@ class _SalesOrdersPageState extends State<SalesOrdersPage>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _fetchSalesData();
+  }
+
+  // Fetch all sales data from API
+  Future<void> _fetchSalesData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final results = await Future.wait([
+        _salesService.getSales(),
+        _salesService.getOrders(),
+        _salesService.getInvoices(),
+      ]);
+
+      final salesResult = results[0];
+      final ordersResult = results[1];
+      final invoicesResult = results[2];
+
+      setState(() {
+        if (salesResult['success'] && salesResult['data'] != null) {
+          final data = salesResult['data']['result'] ?? salesResult['data'];
+          if (data is List) {
+            _salesData = data;
+          }
+        }
+        if (ordersResult['success'] && ordersResult['data'] != null) {
+          final data = ordersResult['data']['result'] ?? ordersResult['data'];
+          if (data is List) {
+            _ordersData = data;
+          }
+        }
+        if (invoicesResult['success'] && invoicesResult['data'] != null) {
+          final data = invoicesResult['data']['result'] ?? invoicesResult['data'];
+          if (data is List) {
+            _invoicesData = data;
+          }
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load data: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override

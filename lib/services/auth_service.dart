@@ -21,18 +21,28 @@ class AuthService {
       final data = response.data;
 
       // Check if API returned success status
-      final bool isSuccess = data['status'] == true || data['statusCode'] == 200;
+      final bool isSuccess = data['status'] == true || data['statusCode'] == 200 || data['statusCode'] == 201;
       
       if (isSuccess) {
-        // Save token if provided
-        if (data is Map && data.containsKey('token') && data['token'] != null) {
-          await _api.saveToken(data['token']);
+        // Extract token - could be in root or in result object
+        String? token = data['token'];
+        if (token == null && data['result'] is Map) {
+          token = data['result']['token'];
+        }
+        
+        // Save token if found
+        if (token != null && token.isNotEmpty && token != 'null') {
+          print('Token found: ${token.substring(0, token.length > 20 ? 20 : token.length)}...');
+          await _api.saveToken(token);
+        } else {
+          print('WARNING: No token found in response!');
+          print('Response keys: ${data.keys.toList()}');
         }
 
         return {
           'success': true,
           'data': data,
-          'message': data['message'] ?? 'Login successful',
+          'message': data['message'] ?? data['result']?['message'] ?? 'Login successful',
         };
       } else {
         return {
@@ -50,41 +60,51 @@ class AuthService {
 
   // Register
   Future<Map<String, dynamic>> register({
-    required String fullName,
+    required String username,
     required String shopName,
     required String phone,
     required String email,
     required String password,
+    String? confirmPassword,
     String? region,
+    String? country,
   }) async {
     try {
       final response = await _api.post(
         ApiService.authRegister,
         data: {
-          'fullname': fullName,
+          'username': username,
           'shop_name': shopName,
           'phone': phone,
           'email': email,
           'password': password,
+          'confirm_password': confirmPassword ?? password,
           'region': region ?? '',
+          'country': country ?? 'Tanzania',
         },
       );
 
       final data = response.data;
 
       // Check if API returned success status
-      final bool isSuccess = data['status'] == true || data['statusCode'] == 200;
+      final bool isSuccess = data['status'] == true || data['statusCode'] == 200 || data['statusCode'] == 201;
       
       if (isSuccess) {
-        // Save token if provided
-        if (data is Map && data.containsKey('token') && data['token'] != null) {
-          await _api.saveToken(data['token']);
+        // Extract token - could be in root or in result object
+        String? token = data['token'];
+        if (token == null && data['result'] is Map) {
+          token = data['result']['token'];
+        }
+        
+        // Save token if found
+        if (token != null && token.isNotEmpty && token != 'null') {
+          await _api.saveToken(token);
         }
 
         return {
           'success': true,
           'data': data,
-          'message': data['message'] ?? 'Registration successful',
+          'message': data['message'] ?? data['result']?['message'] ?? 'Registration successful',
         };
       } else {
         return {

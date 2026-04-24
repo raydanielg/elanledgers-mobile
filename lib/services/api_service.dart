@@ -35,8 +35,15 @@ class ApiService {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Add token to headers if available
-          if (_token != null) {
-            options.headers['Authorization'] = 'Bearer $_token';
+          // API docs says: Authorization: Bearer <token>, Authorization: <token>, or token: <token>
+          if (_token != null && _token!.isNotEmpty) {
+            // Try format: Authorization: <token> (without Bearer prefix)
+            options.headers['Authorization'] = _token!;
+            // Also add as 'token' header as alternative
+            options.headers['token'] = _token!;
+            print('Token added to request: ${_token!.substring(0, _token!.length > 20 ? 20 : _token!.length)}...');
+          } else {
+            print('WARNING: No token available for request!');
           }
           print('API Request: ${options.method} ${options.path}');
           print('Headers: ${options.headers}');
@@ -51,6 +58,10 @@ class ApiService {
         onError: (DioException e, handler) {
           print('API Error: ${e.message}');
           print('Response: ${e.response?.data}');
+          // Handle 401 Unauthorized - redirect to login
+          if (e.response?.statusCode == 401) {
+            print('401 Unauthorized - Token may be invalid or expired');
+          }
           return handler.next(e);
         },
       ),
@@ -61,6 +72,7 @@ class ApiService {
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token');
+    print('Token loaded from storage: ${_token != null ? 'Yes (length: ${_token!.length})' : 'No'}');
   }
 
   // Save token to storage
@@ -68,6 +80,7 @@ class ApiService {
     _token = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
+    print('Token saved to storage: ${token.substring(0, token.length > 20 ? 20 : token.length)}...');
   }
 
   // Clear token

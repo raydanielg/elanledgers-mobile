@@ -2,6 +2,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/locale_utils.dart';
+import 'package:duka_app/services/stock_service.dart';
+import 'package:duka_app/services/purchase_service.dart';
 
 class StockPage extends StatefulWidget {
   const StockPage({
@@ -21,11 +23,26 @@ class StockPage extends StatefulWidget {
 
 class _StockPageState extends State<StockPage> with TickerProviderStateMixin {
   late final TabController _tabController;
-  final List<_StockProduct> _products = [
-    _StockProduct(name: 'POSTER DESIGNING', price: '20,000.00'),
-    _StockProduct(name: 'POSTER DESIGNING', price: '20,000.00'),
-  ];
+  final StockService _stockService = StockService();
+  final PurchaseService _purchaseService = PurchaseService();
 
+  // API Data
+  List<dynamic> _productsData = [];
+  List<dynamic> _stockData = [];
+  List<dynamic> _categoriesData = [];
+  List<dynamic> _suppliersData = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  // UI-compatible products list (mapped from API data)
+  List<_StockProduct> get _products => _productsData.isEmpty
+      ? []
+      : _productsData.map((p) => _StockProduct(
+          name: p['product_name']?.toString() ?? 'Unknown',
+          price: p['sp']?.toString() ?? p['selling_price']?.toString() ?? '0.00',
+        )).toList();
+
+  // UI State
   final List<String> _accounts = ['Cash', 'Bank', 'Mobile Money', '+ New'];
   String _selectedAccount = 'Cash';
   String _selectedFilter = 'Today';
@@ -75,6 +92,7 @@ class _StockPageState extends State<StockPage> with TickerProviderStateMixin {
       initialIndex: widget.initialTabIndex,
     );
     _tabController.addListener(_onTabChanged);
+    _fetchStockData();
     if (widget.openProductDialogOnStart) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -87,6 +105,63 @@ class _StockPageState extends State<StockPage> with TickerProviderStateMixin {
         if (mounted) {
           _showRestockDialog();
         }
+      });
+    }
+  }
+
+  // Fetch all stock data from API
+  Future<void> _fetchStockData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final results = await Future.wait([
+        _stockService.getProducts(),
+        _stockService.getStock(),
+        _stockService.getStockCategories(),
+        _purchaseService.getSuppliers(),
+      ]);
+
+      final productsResult = results[0];
+      final stockResult = results[1];
+      final categoriesResult = results[2];
+      final suppliersResult = results[3];
+
+      setState(() {
+        if (productsResult['success'] && productsResult['data'] != null) {
+          final data = productsResult['data']['result'] ?? productsResult['data'];
+          if (data is List) {
+            _productsData = data;
+          }
+        }
+        if (stockResult['success'] && stockResult['data'] != null) {
+          final data = stockResult['data']['result'] ?? stockResult['data'];
+          if (data is List) {
+            _stockData = data;
+          }
+        }
+        if (categoriesResult['success'] && categoriesResult['data'] != null) {
+          final data = categoriesResult['data']['result'] ?? categoriesResult['data'];
+          if (data is List) {
+            _categoriesData = data;
+          }
+        }
+        if (suppliersResult['success'] && suppliersResult['data'] != null) {
+          final data = suppliersResult['data']['result'] ?? suppliersResult['data'];
+          if (data is List) {
+            _suppliersData = data;
+          }
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load data: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }

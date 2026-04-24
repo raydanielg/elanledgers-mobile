@@ -1,0 +1,1828 @@
+Elan Ledgers API
+App, Data, Reports, and Legacy API Reference
+This page documents the current auth, read, write, report, and legacy JSON endpoints. The codebase uses the /app/... route family in endpoint definitions. If your deployment still exposes the controller directory path, prepend /api/v1 to the same route.
+
+Generated: 24 Apr 2026 13:09:02
+Base: https://elanledgers.co.tz
+Bearer token required for most app endpoints
+Lock Docs
+Auth Endpoints
+10
+GET Data Endpoints
+89
+Report Endpoints
+58
+POST Endpoints
+72
+Legacy Endpoints
+3
+Authentication
+Use POST /app/auth/signin to get a token, then pass Authorization: Bearer <token> on protected routes.
+
+Method	Path	Auth	Description
+GET	/app/auth/map	Public	
+List supported auth endpoints and JWT requirements.
+POST	/app/auth/signin	Public	
+Authenticate a user and return a JWT token.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Phone, email, user ID, or role username.
+password
+Required
+Account password.
+POST	/app/auth/signup	Public	
+Alias for account registration.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Full name / display name for the new account.
+shop_name
+Required
+Business name for the first shop.
+shop_type
+Required
+Business/shop type label.
+phone
+Required
+Phone number digits only.
+email
+Required
+Unique email address.
+password
+Required
+Account password, minimum 4 characters.
+confirm_password
+Required
+Must match password.
+country
+Optional
+Country name captured during signup.
+iso
+Optional
+Country ISO code.
+region
+Optional
+Region/location value.
+reseller_id
+Optional
+Optional reseller referral code.
+website
+Optional
+Honeypot field and should be left blank.
+POST	/app/auth/register	Public	
+Register a new account and default business.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Full name / display name for the new account.
+shop_name
+Required
+Business name for the first shop.
+shop_type
+Required
+Business/shop type label.
+phone
+Required
+Phone number digits only.
+email
+Required
+Unique email address.
+password
+Required
+Account password, minimum 4 characters.
+confirm_password
+Required
+Must match password.
+country
+Optional
+Country name captured during signup.
+iso
+Optional
+Country ISO code.
+region
+Optional
+Region/location value.
+reseller_id
+Optional
+Optional reseller referral code.
+website
+Optional
+Honeypot field and should be left blank.
+POST	/app/auth/completeprofile	Bearer	
+Complete onboarding fields for the current account.
+Body: application/json or form-data
+Request Fields
+region
+Required
+Region/location value.
+lob_id
+Required
+Selected line of business ID.
+reseller_id
+Optional
+Optional reseller referral code.
+POST	/app/auth/reset/send	Public	
+Send a one-time password to a known account.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Known phone, email, or user ID for OTP recovery.
+POST	/app/auth/addshop	Bearer	
+Create another shop for the authenticated account.
+Body: application/json or form-data
+Request Fields
+shop_name
+Required
+Name of the new shop/business.
+shop_type
+Required
+Business/shop type label.
+lob_id
+Required
+Line of business ID.
+user_id
+Optional
+Optional user ID override; defaults to the authenticated user.
+POST	/app/auth/switchshop	Bearer	
+Switch the active shop in session.
+Body: application/json or form-data
+Request Fields
+shop_id
+Required
+Shop ID to activate in session.
+GET|POST	/app/auth/signout	Bearer	
+Destroy the session restored from the JWT token.
+GET|POST	/app/auth/constants	Public	
+Return public app constants for bootstrapping clients.
+GET Data Endpoints
+Use GET /app/get/getdata/{endpoint} for helper-backed datasets and controller-based reads.
+
+Helper Data Routes
+Path	Auth	Description
+/app/get/getdata/filter_range	Bearer	Dispatches query/data_helper.php::getdata('filter_range').
+/app/get/getdata/stock_category	Bearer	Dispatches query/data_helper.php::getdata('stock_category').
+/app/get/getdata/payment_mode	Bearer	Dispatches query/data_helper.php::getdata('payment_mode').
+/app/get/getdata/permissions	Bearer	Dispatches query/data_helper.php::getdata('permissions').
+/app/get/getdata/shop_settings	Bearer	Dispatches query/data_helper.php::getdata('shop_settings').
+/app/get/getdata/session_shop	Bearer	Dispatches query/data_helper.php::getdata('session_shop').
+/app/get/getdata/sidemenu	Bearer	Dispatches query/data_helper.php::getdata('sidemenu').
+/app/get/getdata/dashboard_summary	Bearer	Dispatches query/data_helper.php::getdata('dashboard_summary').
+/app/get/getdata/products	Bearer	Dispatches query/data_helper.php::getdata('products').
+/app/get/getdata/product_history	Bearer	Dispatches query/data_helper.php::getdata('product_history').
+/app/get/getdata/stock	Bearer	Dispatches query/data_helper.php::getdata('stock').
+/app/get/getdata/stockCategoryWise	Bearer	Dispatches query/data_helper.php::getdata('stockCategoryWise').
+/app/get/getdata/sellable_stock	Bearer	Dispatches query/data_helper.php::getdata('sellable_stock').
+/app/get/getdata/profit_summary	Bearer	Dispatches query/data_helper.php::getdata('profit_summary').
+/app/get/getdata/salestable	Bearer	Dispatches query/data_helper.php::getdata('salestable').
+/app/get/getdata/sales	Bearer	Dispatches query/data_helper.php::getdata('sales').
+/app/get/getdata/orders	Bearer	Dispatches query/data_helper.php::getdata('orders').
+/app/get/getdata/productsInOrder	Bearer	Dispatches query/data_helper.php::getdata('productsInOrder').
+/app/get/getdata/invoices	Bearer	Dispatches query/data_helper.php::getdata('invoices').
+/app/get/getdata/sales_orders	Bearer	Dispatches query/data_helper.php::getdata('sales_orders').
+/app/get/getdata/sales_summary	Bearer	Dispatches query/data_helper.php::getdata('sales_summary').
+/app/get/getdata/invoice_summary	Bearer	Dispatches query/data_helper.php::getdata('invoice_summary').
+/app/get/getdata/order_summary	Bearer	Dispatches query/data_helper.php::getdata('order_summary').
+/app/get/getdata/expense_accounts	Bearer	Dispatches query/data_helper.php::getdata('expense_accounts').
+/app/get/getdata/expense_summary	Bearer	Dispatches query/data_helper.php::getdata('expense_summary').
+/app/get/getdata/cashbookAccounts	Bearer	Dispatches query/data_helper.php::getdata('cashbookAccounts').
+/app/get/getdata/chatOfAccounts	Bearer	Dispatches query/data_helper.php::getdata('chatOfAccounts').
+/app/get/getdata/sourceOfFundAccounts	Bearer	Dispatches query/data_helper.php::getdata('sourceOfFundAccounts').
+/app/get/getdata/cashflow	Bearer	Dispatches query/data_helper.php::getdata('cashflow').
+/app/get/getdata/expenses	Bearer	Dispatches query/data_helper.php::getdata('expenses').
+/app/get/getdata/team	Bearer	Dispatches query/data_helper.php::getdata('team').
+/app/get/getdata/waiters	Bearer	Dispatches query/data_helper.php::getdata('waiters').
+/app/get/getdata/staffInSales	Bearer	Dispatches query/data_helper.php::getdata('staffInSales').
+/app/get/getdata/waitersInSales	Bearer	Dispatches query/data_helper.php::getdata('waitersInSales').
+/app/get/getdata/shops	Bearer	Dispatches query/data_helper.php::getdata('shops').
+/app/get/getdata/users	Bearer	Dispatches query/data_helper.php::getdata('users').
+/app/get/getdata/session_user	Bearer	Dispatches query/data_helper.php::getdata('session_user').
+/app/get/getdata/reseller_summary	Bearer	Dispatches query/data_helper.php::getdata('reseller_summary').
+/app/get/getdata/reseller_invited_shops	Bearer	Dispatches query/data_helper.php::getdata('reseller_invited_shops').
+/app/get/getdata/reseller_admin_list	Bearer	Dispatches query/data_helper.php::getdata('reseller_admin_list').
+/app/get/getdata/my_shops	Bearer	Dispatches query/data_helper.php::getdata('my_shops').
+/app/get/getdata/contact_category	Bearer	Dispatches query/data_helper.php::getdata('contact_category').
+/app/get/getdata/contacts	Bearer	Dispatches query/data_helper.php::getdata('contacts').
+/app/get/getdata/customers	Bearer	Dispatches query/data_helper.php::getdata('customers').
+/app/get/getdata/suppliers	Bearer	Dispatches query/data_helper.php::getdata('suppliers').
+/app/get/getdata/oncredit_suppliers	Bearer	Dispatches query/data_helper.php::getdata('oncredit_suppliers').
+/app/get/getdata/oncash_suppliers	Bearer	Dispatches query/data_helper.php::getdata('oncash_suppliers').
+/app/get/getdata/onorder_suppliers	Bearer	Dispatches query/data_helper.php::getdata('onorder_suppliers').
+/app/get/getdata/oncredit_customers	Bearer	Dispatches query/data_helper.php::getdata('oncredit_customers').
+/app/get/getdata/customerInSales	Bearer	Dispatches query/data_helper.php::getdata('customerInSales').
+/app/get/getdata/systeminfo	Bearer	Dispatches query/data_helper.php::getdata('systeminfo').
+/app/get/getdata/suUsers	Bearer	Dispatches query/data_helper.php::getdata('suUsers').
+/app/get/getdata/suShops	Bearer	Dispatches query/data_helper.php::getdata('suShops').
+/app/get/getdata/packages	Bearer	Dispatches query/data_helper.php::getdata('packages').
+/app/get/getdata/lobs	Bearer	Dispatches query/data_helper.php::getdata('lobs').
+/app/get/getdata/purchase_history	Bearer	Dispatches query/data_helper.php::getdata('purchase_history').
+/app/get/getdata/purchase_orders	Bearer	Dispatches query/data_helper.php::getdata('purchase_orders').
+/app/get/getdata/importHistory	Bearer	Dispatches query/data_helper.php::getdata('importHistory').
+/app/get/getdata/recycle_bin	Bearer	Dispatches query/data_helper.php::getdata('recycle_bin').
+/app/get/getdata/tms	Bearer	Dispatches query/data_helper.php::getdata('tms').
+/app/get/getdata/tellerCashManagement	Bearer	Dispatches query/data_helper.php::getdata('tellerCashManagement').
+/app/get/getdata/customerCashManagement	Bearer	Dispatches query/data_helper.php::getdata('customerCashManagement').
+/app/get/getdata/customerAccountsSummary	Bearer	Dispatches query/data_helper.php::getdata('customerAccountsSummary').
+/app/get/getdata/bankingCustomerAccounts	Bearer	Dispatches query/data_helper.php::getdata('bankingCustomerAccounts').
+/app/get/getdata/totalStockReport	Bearer	Dispatches query/data_helper.php::getdata('totalStockReport').
+/app/get/getdata/totalSalesReport	Bearer	Dispatches query/data_helper.php::getdata('totalSalesReport').
+/app/get/getdata/loanProducts	Bearer	Dispatches query/data_helper.php::getdata('loanProducts').
+/app/get/getdata/loanApplications	Bearer	Dispatches query/data_helper.php::getdata('loanApplications').
+/app/get/getdata/loans	Bearer	Dispatches query/data_helper.php::getdata('loans').
+/app/get/getdata/loanSchedules	Bearer	Dispatches query/data_helper.php::getdata('loanSchedules').
+/app/get/getdata/guarantors	Bearer	Dispatches query/data_helper.php::getdata('guarantors').
+/app/get/getdata/onlyguarantors	Bearer	Dispatches query/data_helper.php::getdata('onlyguarantors').
+Controller Data Routes
+Path	Auth	Description
+/app/get/getdata/customer/campaign-users	Bearer	Return privileged campaign user recipients.
+/app/get/getdata/customer/message-history	Bearer	Return message history for a phone number or system user.
+/app/get/getdata/sales/record	Bearer	Return a single sale header and its sold items.
+/app/get/getdata/sales/receipt/preview	Bearer	Stream the rendered sales document preview PDF for a sale_id.
+/app/get/getdata/sales/receipt/download	Bearer	Download the rendered sales document PDF for a sale_id.
+/app/get/getdata/sales/customer-statement/preview	Bearer	Stream the customer statement preview PDF for a customer_id.
+/app/get/getdata/sales/customer-statement/download	Bearer	Download the customer statement PDF for a customer_id.
+/app/get/getdata/reports/export/pdf	Bearer	Generate and stream a backend PDF export for a mapped report_key.
+/app/get/getdata/reports/export/excel	Bearer	Generate and download a backend Excel export for a mapped report_key.
+/app/get/getdata/stock/purchase-document/preview	Bearer	Stream the purchase receipt/order preview PDF for a purchase_id.
+/app/get/getdata/stock/purchase-document/download	Bearer	Download the purchase receipt/order PDF for a purchase_id.
+/app/get/getdata/stock/supplier-statement/preview	Bearer	Stream the supplier statement preview PDF for a supplier_id.
+/app/get/getdata/stock/supplier-statement/download	Bearer	Download the supplier statement PDF for a supplier_id.
+/app/get/getdata/stock/inventory	Bearer	Return the current inventory snapshot.
+/app/get/getdata/stock/lob-categories	Bearer	Return product categories and subcategories for the current LOB.
+/app/get/getdata/stock/remote-shop-products	Bearer	Return products available from another owned shop.
+/app/get/getdata/settings/serverinfo	Bearer	Return server and system information.
+Report Endpoints
+Use POST /app/post/postdata/report/filter/set to set the shared report filter, then read results from GET /app/get/getreport/{endpoint}.
+
+Stock & Services Reports
+/app/get/getreport/totalStock Current Stock Summary | keyField: stock_id
+/app/get/getreport/stockByCategory Stock by Category | keyField: category
+/app/get/getreport/countingSheet Stock Counting Sheet | keyField: product_name
+/app/get/getreport/priceList Price List | keyField: product_name
+/app/get/getreport/barcodeReport Barcode List | keyField: barcode
+/app/get/getreport/lowStock Low Stock Items | keyField: stock_id
+/app/get/getreport/badStock Damaged Stock | keyField: stock_id
+/app/get/getreport/lostStock Lost Stock Items | keyField: stock_id
+/app/get/getreport/soldStock Sold Stock | keyField: stock_id
+/app/get/getreport/expiringStock Expiring Stock | keyField: stock_id
+/app/get/getreport/expiredStock Expired Stock Items | keyField: stock_id
+/app/get/getreport/outOfStock Out of Stock Items | keyField: stock_id
+/app/get/getreport/stockMovements Stock Movement History | keyField: movement_id
+/app/get/getreport/serviceSales Service Sales Summary | keyField: service_name
+/app/get/getreport/serviceSalesByStaff Service Sales by Staff | keyField: staff_name
+/app/get/getreport/topServices Top Services | keyField: service_name
+Purchase Reports
+/app/get/getreport/purchaseHistory Purchase History Report | keyField: id
+/app/get/getreport/purchaseReturns Purchase Returns Report | keyField: product_name
+/app/get/getreport/purchasesBySupplier Purchases by Supplier | keyField: supplier_id
+/app/get/getreport/purchasesByProduct Purchases by Product | keyField: product_name
+/app/get/getreport/purchasesByStaff Purchases by Staff | keyField: username
+Supplier Reports
+/app/get/getreport/allSuppliers Suppliers List | keyField: supplier_id
+/app/get/getreport/creditSuppliers Suppliers with Credit | keyField: supplier_id
+/app/get/getreport/supplierBalances Supplier Balances | keyField: supplier_id
+/app/get/getreport/topSuppliers Top Suppliers | keyField: supplier_id
+Sales Reports
+/app/get/getreport/totalSales Sales Summary | keyField: sale_id
+/app/get/getreport/allOrders Sales Orders | keyField: sale_id
+/app/get/getreport/cashSales Cash Sales Report | keyField: sale_id
+/app/get/getreport/creditSales Credit Sales Report | keyField: sale_id
+/app/get/getreport/salesByCategory Category Sales Summary | keyField: group
+/app/get/getreport/salesByProduct Product Sales Summary | keyField: product_name
+/app/get/getreport/unpaidSalesByProduct Unpaid Product Sales | keyField: product_name
+/app/get/getreport/staffSalesByItems Staff Sales by Item | keyField: staff_name
+/app/get/getreport/salesByCustomer Customer Sales Summary | keyField: customer
+/app/get/getreport/salesByStaff Staff Sales Summary | keyField: username
+/app/get/getreport/dailySales Daily Sales Summary | keyField: sale_date
+/app/get/getreport/salesByPaymentMethod Sales by Payment Method | keyField: payment_mode
+/app/get/getreport/topSellingProducts Top Selling Products | keyField: product_name
+/app/get/getreport/unpaidSales Unpaid Sales | keyField: sale_id
+Customer Reports
+/app/get/getreport/allCustomers Customers List | keyField: customer_id
+/app/get/getreport/oncreditCustomers Customers with Credit | keyField: customer_id
+/app/get/getreport/customerBalances Customer Balances | keyField: customer_id
+/app/get/getreport/topCustomers Top Customers | keyField: customer_id
+Expenses Reports
+/app/get/getreport/allExpenses Expense History | keyField: expense_id
+/app/get/getreport/expensesByCategory Expenses by Category | keyField: category
+/app/get/getreport/expensesByStaff Expenses by Staff | keyField: username
+/app/get/getreport/expenseSummary Expense Summary | keyField: expense_id
+Profit & Loss Reports
+/app/get/getreport/profit Realized Profit | keyField: stock_id
+/app/get/getreport/profitEstimate Estimated Profit | keyField: stock_id
+/app/get/getreport/loss Recorded Loss | keyField: stock_id
+/app/get/getreport/profitByProduct Profit by Product | keyField: product_name
+/app/get/getreport/profitByCategory Profit by Category | keyField: category
+Cash Flow Reports
+/app/get/getreport/cashInHand Cash in Hand | keyField: currency
+/app/get/getreport/cashOut Cash Outflows | keyField: flow_id
+/app/get/getreport/cashIn Cash Inflows | keyField: flow_id
+/app/get/getreport/accountsBalance Account Balances | keyField: account_id
+/app/get/getreport/cashFlowSummary Cash Flow Summary | keyField: flow_id
+/app/get/getreport/accountTransactions Account Transactions | keyField: account_id
+POST Endpoints
+Use POST /app/post/postdata/{endpoint} for write operations. The groups below follow the first route segment for easier scanning.
+
+Banking
+POST
+Bearer
+/app/post/postdata/banking/customer-transaction
+Create or update a customer cash-in or cash-out transaction.
+Request Fields
+customer_id
+Required
+Customer account holder ID.
+type
+Required
+cashin or cashout.
+from_account
+Required
+Source account ID.
+to_account
+Required
+Destination account ID.
+amount
+Required
+Transaction amount.
+record_date
+Required
+Transaction date.
+case
+Optional
+Use update to edit an existing cash entry; omit for create.
+record_id
+Optional
+Existing cash_management cash_id when case=update.
+Cashflow
+POST
+Bearer
+/app/post/postdata/cashflow/add-expense
+Record an expense against a selected account.
+Request Fields
+type
+Optional
+Commonly cashout.
+category
+Optional
+Expense category label.
+from_account_id
+Optional
+Source account ID.
+to_account_id
+Optional
+Destination account ID.
+amount
+Required
+Expense amount.
+record_date
+Optional
+Cashflow date/time.
+description
+Optional
+Optional narrative/description.
+This endpoint forwards posted cashflow columns directly into the cashflow insert.
+POST
+Bearer
+/app/post/postdata/cashflow/add-fund
+Record a cash-in fund transfer.
+Request Fields
+type
+Optional
+Commonly cashin.
+category
+Optional
+Cashflow category label.
+from_account_id
+Optional
+Source account ID.
+to_account_id
+Optional
+Destination account ID.
+amount
+Required
+Transfer amount.
+record_date
+Optional
+Cashflow date/time.
+description
+Optional
+Optional narrative/description.
+This endpoint forwards posted cashflow columns directly into the cashflow insert.
+POST
+Bearer
+/app/post/postdata/cashflow/delete-expenses
+Archive one or more expenses.
+Request Fields
+flow_ids[]
+Required
+One or more cashflow flow_id values to archive.
+Customer
+POST
+Bearer
+/app/post/postdata/customer/category/create
+Create or update a contact category.
+Request Fields
+category_id
+Optional
+Existing category ID for update.
+category_name
+Required
+Category display name.
+POST
+Bearer
+/app/post/postdata/customer/category/delete
+Delete an unused contact category.
+Request Fields
+category_id
+Required
+Category ID to delete.
+POST
+Bearer
+/app/post/postdata/customer/contact/bulk-categorize
+Assign a category to multiple selected contacts.
+Request Fields
+category_id
+Required
+Target category ID.
+customer_ids[]
+Required
+One or more contact/customer IDs.
+POST
+Bearer
+/app/post/postdata/customer/contact/create
+Create or update a campaign/contact record.
+Request Fields
+customer_id
+Optional
+Existing contact ID for update; omit to create.
+category_id
+Optional
+Assigned category ID.
+name
+Required
+Contact full/display name.
+phone
+Optional
+Contact phone number.
+email
+Optional
+Contact email address.
+address
+Optional
+Contact address/location.
+note
+Optional
+Optional note.
+POST
+Bearer
+/app/post/postdata/customer/create
+Create or update a customer record.
+Request Fields
+customer_id
+Optional
+Existing customer ID for update; omit to create.
+customer_type
+Optional
+regular or banking; defaults to regular.
+category_id
+Optional
+Assigned contact/customer category ID.
+customer_name
+Required
+Customer full/display name.
+phone
+Optional
+Customer phone number.
+email
+Optional
+Customer email address.
+address
+Optional
+Customer address/location.
+note
+Optional
+Optional note.
+POST
+Bearer
+/app/post/postdata/customer/delete
+Soft-delete one or more customers.
+Request Fields
+customer_ids[]
+Required
+One or more customer IDs to archive.
+POST
+Bearer
+/app/post/postdata/customer/import
+Import customers from an uploaded spreadsheet.
+Body: multipart/form-data
+Request Fields
+file
+Required
+Spreadsheet file (.xls, .xlsx, .csv) using the contacts template.
+category_id
+Optional
+Category assigned to imported contacts.
+POST
+Bearer
+/app/post/postdata/customer/sms/send-bulk
+Send an SMS campaign to selected customers or contacts.
+Request Fields
+message
+Required
+SMS body; placeholders *fullName* and *firstName* are supported.
+recipient_scope
+Optional
+Optional scope hint such as category or selected recipients.
+category_id
+Optional
+Single category ID or array of category IDs.
+customer_ids[]
+Optional
+One or more customer/contact IDs.
+user_ids[]
+Optional
+One or more system user IDs; allowed for SU/SA flows.
+Filter
+POST
+Bearer
+/app/post/postdata/filter/set
+Persist the shared date filter used by data endpoints.
+Body: application/json or form-data
+Request Fields
+filter
+Required
+Filter key such as today, thismonth, custom, or reset.
+from
+Optional
+Start date in YYYY-MM-DD, mainly for custom filters.
+to
+Optional
+End date in YYYY-MM-DD, mainly for custom filters.
+title
+Optional
+Human-readable filter title shown in the UI.
+Home
+POST
+Bearer
+/app/post/postdata/home/password/change
+Change the current user's password.
+Request Fields
+new_password
+Required
+New password.
+confirm_password
+Required
+Must match new_password.
+Microfinance
+POST
+Bearer
+/app/post/postdata/microfinance/category/create
+Create a microfinance contact category.
+Request Fields
+category_name
+Required
+Microfinance contact category name.
+POST
+Bearer
+/app/post/postdata/microfinance/contact/create
+Create a microfinance contact record.
+Request Fields
+category_id
+Optional
+Assigned category ID.
+name
+Required
+Contact full/display name.
+phone
+Optional
+Contact phone number.
+email
+Optional
+Contact email address.
+address
+Optional
+Contact address/location.
+note
+Optional
+Optional note.
+POST
+Bearer
+/app/post/postdata/microfinance/guarantor/create
+Create or update a guarantor record.
+Request Fields
+guarantor_id
+Optional
+Existing guarantor ID for update.
+customer_id
+Optional
+Linked customer/borrower ID.
+guarantor_name
+Required
+Guarantor full name.
+phone
+Required
+Guarantor phone number.
+guarantor_address
+Optional
+Guarantor address.
+guarantor_national_id
+Optional
+National ID / document number.
+record_status
+Optional
+Record status, defaults to active.
+POST
+Bearer
+/app/post/postdata/microfinance/import
+Import microfinance contacts from a spreadsheet.
+Body: multipart/form-data
+Request Fields
+file
+Required
+Spreadsheet file (.xls, .xlsx, .csv) using the contacts template.
+category_id
+Optional
+Category assigned to imported contacts.
+POST
+Bearer
+/app/post/postdata/microfinance/loan-product/create
+Create or update a loan product.
+Request Fields
+loan_product_id
+Optional
+Existing loan product ID for update.
+product_name
+Required
+Loan product name.
+interest_rate
+Required
+Interest rate percentage/amount.
+interest_type
+Required
+Interest calculation type.
+interest_policy
+Optional
+Interest policy mode.
+repayment_frequency
+Required
+daily, weekly, monthly, etc.
+duration
+Required
+Loan duration value.
+penalty_rate
+Optional
+Penalty rate value.
+processing_fee
+Optional
+Processing fee amount.
+min_amount
+Optional
+Minimum requestable amount.
+max_amount
+Optional
+Maximum requestable amount.
+requires_savings
+Optional
+Set to 1 to require savings.
+record_status
+Optional
+Record status, defaults to active.
+POST
+Bearer
+/app/post/postdata/microfinance/loan/create
+Create a new loan application record.
+Request Fields
+customer_id
+Required
+Borrower/customer ID.
+loan_product_id
+Required
+Loan product ID.
+requested_amount
+Required
+Requested principal amount.
+loan_purpose
+Optional
+Purpose/remarks for the loan request.
+application_date
+Optional
+Application date in YYYY-MM-DD.
+interest_rate
+Optional
+Interest rate captured at application time.
+interest_type
+Optional
+Interest type captured at application time.
+repayment_frequency
+Optional
+Repayment frequency captured at application time.
+duration
+Optional
+Loan duration value.
+interest_amount
+Optional
+Computed interest amount.
+total_application_amount
+Optional
+Computed total payable amount.
+notes
+Optional
+Optional internal notes.
+record_status
+Optional
+Record status, defaults to active.
+POST
+Bearer
+/app/post/postdata/microfinance/loan/update
+Update, review, approve, reject, or disburse a loan record.
+Request Fields
+loan_id
+Required
+Loan record ID to update.
+action
+Optional
+Optional workflow action: review, approve, reject, or disburse.
+customer_id
+Optional
+Updated borrower/customer ID.
+loan_product_id
+Optional
+Updated loan product ID.
+requested_amount
+Optional
+Requested principal amount.
+loan_purpose
+Optional
+Loan purpose/remarks.
+application_date
+Optional
+Application date.
+approved_amount
+Optional
+Approved principal amount.
+approved_by
+Optional
+Approver role/user ID.
+reviewed_by
+Optional
+Reviewer role/user ID.
+approval_date
+Optional
+Approval date.
+interest_rate
+Optional
+Interest rate.
+interest_type
+Optional
+Interest type.
+repayment_frequency
+Optional
+Repayment frequency.
+duration
+Optional
+Loan duration.
+principal_amount
+Optional
+Principal amount.
+interest_amount
+Optional
+Interest amount.
+total_payable
+Optional
+Total payable amount.
+total_paid
+Optional
+Total amount paid so far.
+outstanding_balance
+Optional
+Outstanding balance amount.
+disbursement_date
+Optional
+Disbursement date.
+disbursed_by
+Optional
+Disbursing role/user ID.
+disbursement_method
+Optional
+cash, mobile money, bank, etc.
+loan_status
+Optional
+Current loan status.
+maturity_date
+Optional
+Maturity date.
+penalty_balance
+Optional
+Outstanding penalty amount.
+notes
+Optional
+Internal notes.
+record_status
+Optional
+Record status.
+POST
+Bearer
+/app/post/postdata/microfinance/sms/send-bulk
+Send a bulk SMS from the microfinance module.
+Request Fields
+message
+Required
+SMS body; placeholders *fullName* and *firstName* are supported.
+recipient_scope
+Optional
+Optional scope hint such as category or selected recipients.
+category_id
+Optional
+Single category ID or array of category IDs.
+customer_ids[]
+Optional
+One or more customer/contact IDs.
+user_ids[]
+Optional
+One or more system user IDs; allowed for SU/SA flows.
+Report
+POST
+Bearer
+/app/post/postdata/report/filter/set
+Persist the shared date filter used by report endpoints.
+Body: application/json or form-data
+Request Fields
+filter
+Required
+Filter key such as today, thismonth, custom, or reset.
+from
+Optional
+Start date in YYYY-MM-DD, mainly for custom filters.
+to
+Optional
+End date in YYYY-MM-DD, mainly for custom filters.
+title
+Optional
+Human-readable filter title shown in the UI.
+Reseller
+POST
+Bearer
+/app/post/postdata/reseller/join
+Enroll the authenticated user into the reseller program.
+No request body is required; the authenticated session user is enrolled.
+Sales
+POST
+Bearer
+/app/post/postdata/sales/add
+Create a new sale, invoice, quotation, or order.
+Request Fields
+customer_id
+Optional
+Customer ID; optional for walk-in sales.
+sale_type
+Required
+cashsale, invoice, quotation, order, or similar sale type.
+waiter_id
+Optional
+Optional nonstaff/waiter role ID.
+items[]
+Required
+Line items encoded as product_id|stock_id|qty|price|discount|subtotal|vat|total.
+total_amount
+Required
+Sale grand total.
+paid_amount
+Required
+Amount paid immediately.
+date
+Optional
+Sale record date in YYYY-MM-DD.
+due_date
+Optional
+Invoice due date in YYYY-MM-DD.
+status
+Optional
+Sale/order workflow status.
+payment_type
+Optional
+Payment type label stored on the sale.
+payment_mode
+Optional
+Cashbook/account ID used when money is received.
+vat
+Optional
+Total VAT amount for the sale.
+discount
+Optional
+Total discount amount for the sale.
+table_no
+Optional
+Optional restaurant table number.
+print
+Optional
+Use on to flag the response for printing.
+POST
+Bearer
+/app/post/postdata/sales/add-payment
+Record a payment against an existing sale or invoice.
+Request Fields
+sale_id
+Required
+Sale/invoice ID.
+amount
+Required
+Payment amount.
+date
+Optional
+Payment date; defaults to today.
+to_account
+Required
+Cashbook/account ID receiving the payment.
+POST
+Bearer
+/app/post/postdata/sales/customer-statement/email
+Email a customer statement to a recipient.
+Request Fields
+customer_id
+Required
+Customer ID.
+to
+Optional
+Override destination email address.
+POST
+Bearer
+/app/post/postdata/sales/delete-record
+Delete or archive a sales record.
+Request Fields
+method
+Required
+archive, active, or delete.
+id
+Required
+Sales record ID.
+table
+Required
+Target table, normally sales.
+key
+Optional
+Primary key column; defaults to sale_id for sales.
+POST
+Bearer
+/app/post/postdata/sales/order-status/update
+Update the workflow status for an order.
+Request Fields
+sale_id
+Required
+Order sale_id.
+status
+Required
+Workflow status such as active, preparing, prepared, or canceled.
+POST
+Bearer
+/app/post/postdata/sales/receipt/email
+Email an invoice, quotation, or receipt to a recipient.
+Request Fields
+sale_id
+Required
+Sale/invoice/quotation ID.
+to
+Optional
+Override destination email address.
+POST
+Bearer
+/app/post/postdata/sales/update
+Update an existing sale record.
+Request Fields
+sale_id
+Required
+Existing sale ID to update.
+customer_id
+Optional
+Customer ID; optional for walk-in sales.
+sale_type
+Required
+cashsale, invoice, quotation, order, or similar sale type.
+waiter_id
+Optional
+Optional nonstaff/waiter role ID.
+items[]
+Required
+Line items encoded as product_id|stock_id|qty|price|discount|subtotal|vat|total.
+total_amount
+Required
+Sale grand total.
+paid_amount
+Required
+Amount paid immediately.
+date
+Optional
+Sale record date in YYYY-MM-DD.
+due_date
+Optional
+Invoice due date in YYYY-MM-DD.
+status
+Optional
+Sale/order workflow status.
+payment_type
+Optional
+Payment type label stored on the sale.
+payment_mode
+Optional
+Cashbook/account ID used when money is received.
+vat
+Optional
+Total VAT amount for the sale.
+discount
+Optional
+Total discount amount for the sale.
+table_no
+Optional
+Optional restaurant table number.
+print
+Optional
+Use on to flag the response for printing.
+original_sale_type
+Optional
+Fallback original sale type when sale_type is omitted.
+Settings
+POST
+Bearer
+/app/post/postdata/settings/account/create
+Create a new account/cashbook entry.
+Request Fields
+type_id
+Required
+Account type ID.
+account_name
+Required
+Account display name.
+customer_id
+Optional
+Optional linked customer ID for banking accounts.
+POST
+Bearer
+/app/post/postdata/settings/account/delete
+Delete the currently selected shop/account.
+Request Fields
+shop_id
+Required
+Current shop ID to archive/delete.
+POST
+Bearer
+/app/post/postdata/settings/email/send
+Send an email using the configured outbound email settings.
+Body: application/json or form-data
+Request Fields
+role_id
+Optional
+Role context used to resolve shop sender settings.
+type
+Optional
+Email type/template key; falls back to subject/template when omitted.
+subject
+Optional
+Fallback type/source hint in some clients.
+template
+Optional
+Fallback template key in some clients.
+record_id
+Optional
+Optional linked record ID.
+custom_subject
+Optional
+Custom email subject.
+custom_text
+Optional
+Custom email message body.
+campaign_name
+Optional
+Optional campaign label.
+senderName
+Optional
+Override sender display name.
+senderEmail
+Optional
+Override sender email address.
+to
+Optional
+Primary recipient email(s).
+cc
+Optional
+CC recipient email(s).
+bcc
+Optional
+BCC recipient email(s).
+POST
+Bearer
+/app/post/postdata/settings/profile/update
+Update the authenticated user's profile details and optionally change the password.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Display name / username.
+phone
+Optional
+Phone number.
+email
+Optional
+Email address.
+country
+Optional
+Country name.
+region
+Optional
+Region name.
+new_password
+Optional
+New password if changing credentials.
+confirm_password
+Optional
+Must match new_password when provided.
+POST
+Bearer
+/app/post/postdata/settings/record/delete
+Delete, archive, or restore a generic record.
+Request Fields
+method
+Required
+archive, active, or delete.
+key
+Required
+Primary key column name.
+row_id
+Required
+Primary key value.
+table
+Required
+Target table name.
+POST
+Bearer
+/app/post/postdata/settings/record/update
+Update a single column using table and primary-key metadata.
+Request Fields
+table
+Required
+Target table name.
+column
+Required
+Column name to update.
+id
+Required
+Record identifier value.
+data
+Required
+New value to write.
+pk
+Required
+Primary key column name.
+Generic low-level updater used by several inline-edit UI actions.
+POST
+Bearer
+/app/post/postdata/settings/shop/reset
+Delete the primary sales and products data for the current shop.
+No request body is required; the current session shop is reset.
+POST
+Bearer
+/app/post/postdata/settings/shop/update
+Update a shop field.
+Request Fields
+column
+Required
+Shop column name to update.
+value
+Required
+New value.
+shop_id
+Required
+Target shop ID.
+POST
+Bearer
+/app/post/postdata/settings/sms-account/verify
+Verify the currently configured SMS provider account.
+No request body is required; the current shop SMS configuration is verified.
+Stock
+POST
+Bearer
+/app/post/postdata/stock/category/create
+Create one or more stock categories.
+Request Fields
+category
+Required
+One or more category names; multiple values can be comma-separated.
+category_id
+Optional
+Optional parent/sentinel category ID used by some UIs.
+POST
+Bearer
+/app/post/postdata/stock/category/update
+Update an existing stock category name.
+Request Fields
+category_id
+Required
+Category ID to rename.
+category
+Required
+New category name.
+POST
+Bearer
+/app/post/postdata/stock/copy-in-products
+Copy products in from another owned shop.
+Request Fields
+product_id[]
+Required
+Product IDs to copy into the current shop.
+POST
+Bearer
+/app/post/postdata/stock/product/category-bulk
+Bulk-assign products to a category.
+Request Fields
+category_id
+Required
+Target category ID.
+product_ids[]
+Required
+One or more product IDs.
+product_ids_json
+Optional
+JSON array alternative for product IDs.
+product_ids_csv
+Optional
+Comma-separated product ID alternative.
+POST
+Bearer
+/app/post/postdata/stock/product/delete-bulk
+Delete multiple products in one request.
+Request Fields
+product_ids[]
+Required
+One or more product IDs.
+product_ids_json
+Optional
+JSON array alternative for product IDs.
+product_ids_csv
+Optional
+Comma-separated product ID alternative.
+POST
+Bearer
+/app/post/postdata/stock/product/photo-delete
+Delete a stored product photo.
+Request Fields
+photo_id
+Required
+Stored product photo ID.
+POST
+Bearer
+/app/post/postdata/stock/product/update
+Update a product or stock batch.
+Body: multipart/form-data
+Request Fields
+stock_id
+Required
+Stock batch ID.
+product_id
+Required
+Product ID.
+product_name
+Required
+Updated product/service name.
+barcode
+Optional
+Barcode value.
+category_id
+Optional
+Category ID.
+reorder_level
+Optional
+Low-stock alert quantity.
+is_taxable
+Optional
+Taxable flag.
+type
+Optional
+product or service.
+bp
+Optional
+Buying price.
+sp
+Optional
+Selling price.
+wp
+Optional
+Wholesale price.
+expiry_date
+Optional
+Batch expiry date.
+discount
+Optional
+Product-level discount.
+photo
+Optional
+Single product photo upload field.
+photos[]
+Optional
+Multiple product photo uploads.
+POST
+Bearer
+/app/post/postdata/stock/purchase-document/email
+Email a purchase document to a recipient.
+Request Fields
+purchase_id
+Required
+Purchase ID.
+to
+Optional
+Override destination email address.
+POST
+Bearer
+/app/post/postdata/stock/purchase/delete
+Archive one or more purchases.
+Request Fields
+purchase_ids[]
+Required
+One or more purchase IDs to archive.
+POST
+Bearer
+/app/post/postdata/stock/register/create
+Register a product or service.
+Body: multipart/form-data
+Request Fields
+type
+Required
+product or service.
+product_name
+Required
+Product/service name.
+barcode
+Optional
+Barcode value.
+imei
+Optional
+IMEI or serial number.
+size
+Optional
+Size/variant label.
+color
+Optional
+Color/variant label.
+category_id
+Optional
+Product category ID.
+unit
+Optional
+Unit label.
+description
+Optional
+Product description.
+reorder_level
+Optional
+Low-stock alert quantity.
+bp
+Optional
+Buying price.
+sp
+Optional
+Selling price.
+quantity
+Optional
+Opening quantity.
+expiry_date
+Optional
+Batch expiry date.
+photo
+Optional
+Single product photo upload field.
+photos[]
+Optional
+Multiple product photo uploads.
+POST
+Bearer
+/app/post/postdata/stock/register/import
+Import products and services from a spreadsheet.
+Body: multipart/form-data
+Request Fields
+file
+Required
+Spreadsheet file (.xls, .xlsx, .csv).
+category_id
+Required
+Target category ID for imported rows.
+stage
+Optional
+preview or confirm; preview uploads the file, confirm saves it.
+preview_token
+Optional
+Preview token returned by the preview stage and required for confirm.
+POST
+Bearer
+/app/post/postdata/stock/restock/balance
+Apply a stock balance adjustment.
+Request Fields
+product_id
+Required
+Product ID.
+stock_id
+Required
+Stock batch ID.
+quantity
+Required
+Adjustment quantity.
+movement_type
+Required
+Adjustment movement type.
+POST
+Bearer
+/app/post/postdata/stock/restock/create
+Record a stock purchase/restock transaction.
+Request Fields
+product_id[]
+Required
+Array of product IDs included in the purchase/restock.
+quantity
+Required
+Quantities indexed by product ID.
+bp
+Required
+Buying prices indexed by product ID.
+sp
+Optional
+Selling prices indexed by product ID.
+wp
+Optional
+Wholesale prices indexed by product ID.
+expiry_date
+Optional
+Expiry dates indexed by product ID.
+supplier_id
+Optional
+Supplier IDs indexed by product ID.
+type
+Required
+purchase or order.
+payment_mode
+Optional
+Cashbook/account ID for paid purchases.
+discount
+Optional
+Purchase discount amount/value.
+POST
+Bearer
+/app/post/postdata/stock/supplier-statement/email
+Email a supplier statement to a recipient.
+Request Fields
+supplier_id
+Required
+Supplier ID.
+to
+Optional
+Override destination email address.
+POST
+Bearer
+/app/post/postdata/stock/transfer
+Transfer stock between shops or locations.
+Request Fields
+product_id[]
+Required
+Array of source product IDs to transfer.
+name
+Required
+Product names indexed by product ID.
+bp
+Required
+Buying prices indexed by product ID.
+sp
+Required
+Selling prices indexed by product ID.
+wp
+Optional
+Wholesale prices indexed by product ID.
+quantity
+Required
+Transfer quantities indexed by product ID.
+fromShop
+Required
+Source shop ID.
+toShop
+Required
+Destination shop ID.
+Su
+POST
+Bearer
+/app/post/postdata/su/shop/update
+Update a shop record from the super-user panel.
+Body: application/json or form-data
+Request Fields
+shop_id
+Required
+Shop ID to update.
+shop_name
+Required
+Updated shop name.
+username
+Required
+Owner username.
+phone
+Optional
+Owner phone number.
+email
+Optional
+Owner email address.
+record_status
+Optional
+Shop record status.
+package_id
+Optional
+Package ID or use package=trial.
+package
+Optional
+Alternative package selection, for example trial.
+subscription_status
+Optional
+1/active or 0/inactive.
+trial_end
+Optional
+Trial end date when a trial package is selected.
+Subscription
+POST
+Bearer
+/app/post/postdata/subscription/package/create
+Create a subscription package.
+Request Fields
+package_id
+Optional
+Existing for update.
+package_name
+Required
+Package display name.
+duration
+Required
+Package duration, usually in months.
+amount
+Required
+Package price.
+description
+Optional
+Package description.
+POST
+Bearer
+/app/post/postdata/subscription/package/update
+Update a subscription package.
+Request Fields
+package_id
+Required
+Package ID to update.
+status
+Required
+New package status flag.
+POST
+Bearer
+/app/post/postdata/subscription/payment/complete
+Complete a subscription payment workflow.
+Request Fields
+package_id
+Required
+Selected subscription package ID.
+phone
+Required
+MSISDN/phone number for payment push.
+Supplier
+POST
+Bearer
+/app/post/postdata/supplier/add
+Create or update a supplier.
+Request Fields
+supplier_id
+Optional
+Existing supplier ID for update.
+supplier_name
+Required
+Supplier display name.
+phone
+Optional
+Supplier phone number.
+email
+Optional
+Supplier email address.
+address
+Optional
+Supplier address.
+company_name
+Optional
+Supplier company name.
+tin
+Optional
+Supplier tax/TIN number.
+POST
+Bearer
+/app/post/postdata/supplier/delete
+Soft-delete one or more suppliers.
+Request Fields
+supplier_ids[]
+Required
+One or more supplier IDs to archive.
+Team
+POST
+Bearer
+/app/post/postdata/team/member/update
+Update a team member display name.
+Request Fields
+role_id
+Required
+Role ID to update.
+username
+Required
+New display name.
+POST
+Bearer
+/app/post/postdata/team/nonstaff/add
+Add a nonstaff team member record.
+Request Fields
+username
+Required
+Display name shown in the UI message.
+role
+Required
+Role label for the nonstaff member.
+POST
+Bearer
+/app/post/postdata/team/permission/update
+Update a single permission flag for a team member.
+Request Fields
+role_id
+Required
+Role ID to update.
+col
+Required
+Permission column key.
+status
+Required
+New flag value, usually 0 or 1.
+POST
+Bearer
+/app/post/postdata/team/staff/add
+Add a staff member to the current shop.
+Request Fields
+username
+Required
+Staff display name.
+phone
+Required
+Staff phone number.
+is_manager
+Optional
+Set to 1/true to grant manager-style permissions.
+permission_key
+Optional
+Any permission flag key from GET /app/get/getdata/permissions can also be posted as checkbox-style fields.
+POST
+Bearer
+/app/post/postdata/team/status/update
+Toggle a team member active/inactive status.
+Request Fields
+role_id
+Required
+Role ID to toggle.
+POST
+Bearer
+/app/post/postdata/team/waiter/create
+Create or update a waiter/nonstaff record.
+Request Fields
+name
+Required
+Waiter/nonstaff display name.
+role_id
+Optional
+Existing waiter role_id for update.
+Upload
+POST
+Bearer
+/app/post/postdata/upload/logo
+Upload a business logo.
+Body: multipart/form-data
+Request Fields
+file
+Required
+Logo file upload.
+Welcome
+POST
+Bearer
+/app/post/postdata/welcome/add-shop
+Legacy alias for adding a shop to the current user.
+Body: application/json or form-data
+Request Fields
+shop_name
+Required
+Name of the new shop/business.
+shop_type
+Required
+Business/shop type label.
+lob_id
+Required
+Line of business ID.
+user_id
+Optional
+Optional user ID override; defaults to the authenticated user.
+POST
+Public
+/app/post/postdata/welcome/register
+Legacy alias for account registration.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Full name / display name for the new account.
+shop_name
+Required
+Business name for the first shop.
+shop_type
+Required
+Business/shop type label.
+phone
+Required
+Phone number digits only.
+email
+Required
+Unique email address.
+password
+Required
+Account password, minimum 4 characters.
+confirm_password
+Required
+Must match password.
+country
+Optional
+Country name captured during signup.
+iso
+Optional
+Country ISO code.
+region
+Optional
+Region/location value.
+reseller_id
+Optional
+Optional reseller referral code.
+website
+Optional
+Honeypot field and should be left blank.
+POST
+Public
+/app/post/postdata/welcome/reset/send
+Legacy alias for sending a password reset OTP.
+Body: application/json or form-data
+Request Fields
+username
+Required
+Known phone, email, or user ID for OTP recovery.
+POST
+Bearer
+/app/post/postdata/welcome/switch-shop
+Legacy alias for switching the active shop.
+Body: application/json or form-data
+Request Fields
+shop_id
+Required
+Shop ID to activate in session.
+Example Requests
+These examples use the documented app route family. Add your bearer token header on protected endpoints.
+
+Sign In
+POST /app/auth/signin
+{
+    "username": "255700000001",
+    "password": "secret123"
+}
+Read Session User
+GET /app/get/getdata/session_user
+No request body required
+Update Profile And Password
+POST /app/post/postdata/settings/profile/update
+{
+    "username": "John Doe",
+    "phone": "0712345678",
+    "email": "john@example.com",
+    "country": "Tanzania",
+    "region": "Dar es Salaam",
+    "new_password": "newpass123",
+    "confirm_password": "newpass123"
+}
+Update Category Name
+POST /app/post/postdata/stock/category/update
+{
+    "category_id": "CAT1001",
+    "category": "Beverages"
+}
+Change Password Only
+POST /app/post/postdata/home/password/change
+{
+    "new_password": "secure456",
+    "confirm_password": "secure456"
+}
+Single Sale Record
+GET /app/get/getdata/sales/record?sale_id=SALE1001
+No request body required
+Legacy JSON Endpoints
+These older endpoints are still available for compatibility. Prefer the app auth/get/post routes for new integrations.
+
+Method	Path	Description
+GET	/api/v1/json/getdata/{endpoint}	Legacy JSON alias for helper-backed data reads and report-prefixed requests.
+GET	/api/v1/json/getreport/{endpoint}	Legacy JSON alias for report endpoints.
+GET	/api/v1/docs	HTML API documentation page protected by the daily PIN.
