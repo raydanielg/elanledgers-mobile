@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
 import 'package:duka_app/services/auth_service.dart';
+import 'package:duka_app/widgets/animated_background.dart';
 import 'login.dart';
 
 class ResetPasswordPage extends StatefulWidget {
@@ -41,7 +42,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
+      body: AnimatedBackground(
+        child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -59,8 +61,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ),
                     Text(
                       _selectedLanguage == 'English' ? 'Back' : 'Rudi',
-                      style: TextStyle(
-                        color: Colors.green.shade600,
+                      style: const TextStyle(
+                        color: Color(0xFF800000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -113,7 +115,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         decoration: InputDecoration(
                           prefixIcon: Icon(
                             Icons.email_outlined,
-                            color: Colors.green.shade400,
+                            color: Color(0xFF800000),
                             size: 20,
                           ),
                           hintText: _selectedLanguage == 'English'
@@ -134,7 +136,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
-                              color: Colors.green.shade400,
+                              color: Color(0xFF800000),
                               width: 1.5,
                             ),
                           ),
@@ -184,13 +186,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(result['message']),
-                                        backgroundColor: result['success'] ? Colors.green : Colors.red,
+                                        backgroundColor: result['success'] ? Color(0xFF800000) : Colors.red,
                                       ),
                                     );
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: const Color(0xFF800000),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -227,7 +229,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 ? 'Back to Sign In'
                                 : 'Rudi kwenye Kuingia',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFF800000),
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -242,6 +244,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

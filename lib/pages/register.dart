@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
 import 'package:duka_app/services/auth_service.dart';
+import 'package:duka_app/widgets/animated_background.dart';
 import 'login.dart';
 import 'homepage.dart';
 
@@ -53,7 +54,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
+      body: AnimatedBackground(
+        child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -71,8 +73,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     Text(
                       _selectedLanguage == 'English' ? 'Back' : 'Rudi',
-                      style: TextStyle(
-                        color: Colors.green.shade600,
+                      style: const TextStyle(
+                        color: Color(0xFF800000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -182,7 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 _agreeToTerms = value ?? false;
                               });
                             },
-                            activeColor: const Color(0xFF4CAF50),
+                            activeColor: const Color(0xFF800000),
                           ),
                           Expanded(
                             child: Text(
@@ -240,7 +242,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(result['message']),
-                                          backgroundColor: Colors.green,
+                                          backgroundColor: Color(0xFF800000),
                                         ),
                                       );
                                       Navigator.pushReplacement(
@@ -260,7 +262,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: const Color(0xFF800000),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -305,7 +307,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: Text(
                                 _selectedLanguage == 'English' ? 'Sign In' : 'Ingia',
                                 style: TextStyle(
-                                  color: Colors.green.shade600,
+                                  color: Color(0xFF800000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -322,6 +324,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -351,7 +354,7 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.green.shade400, size: 20),
+        prefixIcon: Icon(icon, color: const Color(0xFF800000), size: 20),
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         border: OutlineInputBorder(
@@ -364,7 +367,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(color: Colors.green.shade400, width: 1.5),
+          borderSide: BorderSide(color: const Color(0xFF800000), width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         filled: true,
@@ -379,7 +382,7 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: _passwordController,
       obscureText: _obscurePassword,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.lock_outline, color: Colors.green.shade400, size: 20),
+        prefixIcon: Icon(Icons.lock_outline, color: const Color(0xFF800000), size: 20),
         hintText: _selectedLanguage == 'English' ? 'Enter password' : 'Weka neno la siri',
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         border: OutlineInputBorder(
@@ -392,7 +395,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(color: Colors.green.shade400, width: 1.5),
+          borderSide: BorderSide(color: const Color(0xFF800000), width: 1.5),
         ),
         suffixIcon: IconButton(
           icon: Icon(

@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
 import 'package:duka_app/services/auth_service.dart';
+import 'package:duka_app/widgets/animated_background.dart';
 import 'register.dart';
 import 'reset.dart';
 import 'homepage.dart';
+import 'learn_more.dart';
+import 'get_support.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -15,6 +18,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -45,19 +49,24 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      drawer: _buildDrawer(),
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 const SizedBox(height: 20),
                 // Menu icon
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
                   icon: const Icon(Icons.menu, color: Colors.black87),
                   padding: EdgeInsets.zero,
                 ),
@@ -81,8 +90,8 @@ class _LoginPageState extends State<LoginPage> {
                 // Subtitle
                 Text(
                   _selectedLanguage == 'English'
-                      ? 'Login with your ghala credentials'
-                      : 'Ingia na taarifa zako za ghala',
+                      ? 'Login with your Elanledgers credentials'
+                      : 'Ingia na taarifa zako za Elanledgers',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
@@ -115,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: InputDecoration(
                           prefixIcon: Icon(
                             Icons.person_outline,
-                            color: Colors.green.shade400,
+                            color: Color(0xFF800000),
                             size: 20,
                           ),
                           hintText: _selectedLanguage == 'English'
@@ -141,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
-                              color: Colors.green.shade400,
+                              color: Color(0xFF800000),
                               width: 1.5,
                             ),
                           ),
@@ -182,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: InputDecoration(
                           prefixIcon: Icon(
                             Icons.lock_outline,
-                            color: Colors.green.shade400,
+                            color: Color(0xFF800000),
                             size: 20,
                           ),
                           hintText: _selectedLanguage == 'English'
@@ -208,7 +217,7 @@ class _LoginPageState extends State<LoginPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
-                              color: Colors.green.shade400,
+                              color: Color(0xFF800000),
                               width: 1.5,
                             ),
                           ),
@@ -270,7 +279,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? 'Forgot password?'
                                 : 'Umesahau neno la siri?',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFF800000),
                               fontSize: 14,
                             ),
                           ),
@@ -323,7 +332,7 @@ class _LoginPageState extends State<LoginPage> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: const Color(0xFF800000),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -379,7 +388,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ? 'Register'
                                     : 'Jisajili',
                                 style: TextStyle(
-                                  color: Colors.green.shade600,
+                                  color: Color(0xFF800000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -395,6 +404,146 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: Colors.transparent,
+      child: AnimatedBackground(
+        numberOfDots: 30,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with Logo
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade200),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'lib/images/elanbrandslogo.png',
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Your Smart Business manager.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+            // Menu Items
+            _buildMenuItem(
+              title: 'Already have an account?',
+              action: 'Login',
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            _buildMenuItem(
+              title: "Don't have an account?",
+              action: 'Register',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RegisterPage(),
+                  ),
+                );
+              },
+            ),
+            _buildMenuItem(
+              title: 'Forgot your password?',
+              action: 'Reset Now',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ResetPasswordPage(),
+                  ),
+                );
+              },
+            ),
+            _buildMenuItem(
+              title: 'Want to know more?',
+              action: 'Learn More',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LearnMorePage(),
+                  ),
+                );
+              },
+            ),
+            _buildMenuItem(
+              title: 'Need Help?',
+              action: 'Get Support',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GetSupportPage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required String title,
+    required String action,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        subtitle: Text(
+          action,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF800000),
+          ),
+        ),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
