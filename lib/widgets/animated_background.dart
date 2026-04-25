@@ -4,15 +4,13 @@ import 'package:flutter/material.dart';
 class AnimatedBackground extends StatefulWidget {
   final Widget child;
   final Color dotColor;
-  final Color lineColor;
   final int numberOfDots;
 
   const AnimatedBackground({
     Key? key,
     required this.child,
     this.dotColor = const Color(0xFF800000),
-    this.lineColor = const Color(0xFF800000),
-    this.numberOfDots = 50,
+    this.numberOfDots = 40,
   }) : super(key: key);
 
   @override
@@ -21,64 +19,69 @@ class AnimatedBackground extends StatefulWidget {
 
 class _AnimatedBackgroundState extends State<AnimatedBackground>
     with TickerProviderStateMixin {
-  late List<Particle> particles;
-  late AnimationController _controller;
+  late List<FloatingDot> dots;
+  late AnimationController _floatController;
+  late AnimationController _pulseController;
   final Random random = Random();
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+
+    _floatController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 20),
     )..repeat();
 
-    particles = List.generate(
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
+    dots = List.generate(
       widget.numberOfDots,
-      (index) => Particle(
+      (index) => FloatingDot(
         x: random.nextDouble(),
         y: random.nextDouble(),
-        vx: (random.nextDouble() - 0.5) * 0.002,
-        vy: (random.nextDouble() - 0.5) * 0.002,
-        size: random.nextDouble() * 4 + 2,
+        baseSize: random.nextDouble() * 6 + 3,
+        speedX: (random.nextDouble() - 0.5) * 0.0008,
+        speedY: (random.nextDouble() - 0.5) * 0.0008,
+        pulsePhase: random.nextDouble() * pi * 2,
       ),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _floatController.dispose();
+    _pulseController.dispose();
     super.dispose();
-  }
-
-  void updateParticles(Size size) {
-    for (var particle in particles) {
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-
-      // Bounce off edges
-      if (particle.x <= 0 || particle.x >= 1) {
-        particle.vx *= -1;
-        particle.x = particle.x.clamp(0.0, 1.0);
-      }
-      if (particle.y <= 0 || particle.y >= 1) {
-        particle.vy *= -1;
-        particle.y = particle.y.clamp(0.0, 1.0);
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: Listenable.merge([_floatController, _pulseController]),
       builder: (context, child) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            updateParticles(Size(constraints.maxWidth, constraints.maxHeight));
+            final size = Size(constraints.maxWidth, constraints.maxHeight);
+
+            // Update dot positions
+            for (var dot in dots) {
+              dot.x += dot.speedX;
+              dot.y += dot.speedY;
+
+              // Gentle wrap around
+              if (dot.x < -0.1) dot.x = 1.1;
+              if (dot.x > 1.1) dot.x = -0.1;
+              if (dot.y < -0.1) dot.y = 1.1;
+              if (dot.y > 1.1) dot.y = -0.1;
+            }
+
             return Stack(
               children: [
-                // White base background
+                // Elegant gradient background
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -86,22 +89,24 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
                       end: Alignment.bottomRight,
                       colors: [
                         Colors.white,
-                        const Color(0xFFFDF8F8),
-                        const Color(0xFFF5E6E6).withOpacity(0.3),
+                        const Color(0xFFFAFAFA),
+                        const Color(0xFFF5F0F0),
                       ],
                     ),
                   ),
                 ),
-                // CustomPaint for dots and lines
+
+                // Floating dots layer
                 CustomPaint(
-                  size: Size(constraints.maxWidth, constraints.maxHeight),
-                  painter: ParticlePainter(
-                    particles: particles,
-                    size: Size(constraints.maxWidth, constraints.maxHeight),
+                  size: size,
+                  painter: FloatingDotsPainter(
+                    dots: dots,
+                    canvasSize: size,
                     dotColor: widget.dotColor,
-                    lineColor: widget.lineColor.withOpacity(0.15),
+                    pulseValue: _pulseController.value,
                   ),
                 ),
+
                 // Content
                 widget.child,
               ],
@@ -113,87 +118,68 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
   }
 }
 
-class Particle {
+class FloatingDot {
   double x, y;
-  double vx, vy;
-  double size;
+  double baseSize;
+  double speedX, speedY;
+  double pulsePhase;
 
-  Particle({
+  FloatingDot({
     required this.x,
     required this.y,
-    required this.vx,
-    required this.vy,
-    required this.size,
+    required this.baseSize,
+    required this.speedX,
+    required this.speedY,
+    required this.pulsePhase,
   });
 }
 
-class ParticlePainter extends CustomPainter {
-  final List<Particle> particles;
-  final Size size;
+class FloatingDotsPainter extends CustomPainter {
+  final List<FloatingDot> dots;
+  final Size canvasSize;
   final Color dotColor;
-  final Color lineColor;
+  final double pulseValue;
 
-  ParticlePainter({
-    required this.particles,
-    required this.size,
+  FloatingDotsPainter({
+    required this.dots,
+    required this.canvasSize,
     required this.dotColor,
-    required this.lineColor,
+    required this.pulseValue,
   });
 
   @override
-  void paint(Canvas canvas, Size canvasSize) {
-    final dotPaint = Paint()
-      ..color = dotColor.withOpacity(0.6)
-      ..style = PaintingStyle.fill;
-
-    final linePaint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-
-    // Draw connections between nearby particles
-    for (int i = 0; i < particles.length; i++) {
-      for (int j = i + 1; j < particles.length; j++) {
-        final p1 = particles[i];
-        final p2 = particles[j];
-
-        final dx = (p1.x - p2.x) * size.width;
-        final dy = (p1.y - p2.y) * size.height;
-        final distance = sqrt(dx * dx + dy * dy);
-
-        if (distance < 100) {
-          final opacity = (1 - distance / 100) * 0.3;
-          canvas.drawLine(
-            Offset(p1.x * size.width, p1.y * size.height),
-            Offset(p2.x * size.width, p2.y * size.height),
-            linePaint..color = lineColor.withOpacity(opacity),
-          );
-        }
-      }
-    }
-
-    // Draw particles
-    for (var particle in particles) {
+  void paint(Canvas canvas, Size size) {
+    for (var dot in dots) {
       final center = Offset(
-        particle.x * size.width,
-        particle.y * size.height,
+        dot.x * canvasSize.width,
+        dot.y * canvasSize.height,
       );
 
-      // Outer glow
-      canvas.drawCircle(
-        center,
-        particle.size * 2,
-        Paint()
-          ..color = dotColor.withOpacity(0.1)
-          ..style = PaintingStyle.fill,
-      );
+      // Calculate pulsing size
+      final pulse = sin(pulseValue * pi * 2 + dot.pulsePhase);
+      final currentSize = dot.baseSize * (0.7 + pulse * 0.3);
+      final opacity = 0.15 + pulse * 0.1;
 
-      // Inner dot
-      canvas.drawCircle(
-        center,
-        particle.size,
-        dotPaint,
-      );
+      // Draw soft outer glow
+      final glowPaint = Paint()
+        ..color = dotColor.withOpacity(opacity * 0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+      canvas.drawCircle(center, currentSize * 3, glowPaint);
+
+      // Draw middle glow
+      final middlePaint = Paint()
+        ..color = dotColor.withOpacity(opacity * 0.6)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+      canvas.drawCircle(center, currentSize * 1.5, middlePaint);
+
+      // Draw solid inner dot
+      final dotPaint = Paint()
+        ..color = dotColor.withOpacity(opacity + 0.2)
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, currentSize, dotPaint);
     }
   }
 

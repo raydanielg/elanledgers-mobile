@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
 import 'package:duka_app/services/auth_service.dart';
-import 'package:duka_app/widgets/animated_background.dart';
+import 'package:duka_app/widgets/image_background.dart';
 import 'register.dart';
 import 'reset.dart';
 import 'homepage.dart';
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       drawer: _buildDrawer(),
-      body: AnimatedBackground(
+      body: ImageBackground(
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -287,76 +287,97 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 24),
                       // Sign In Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    
-                                    final result = await _authService.login(
-                                      username: _emailController.text.trim(),
-                                      password: _passwordController.text,
+                      // Landing Style Login Button
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : () async {
+                                if (_formKey.currentState!.validate()) {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  
+                                  final result = await _authService.login(
+                                    username: _emailController.text.trim(),
+                                    password: _passwordController.text,
+                                  );
+                                  
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  
+                                  if (result['success']) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message']),
+                                        backgroundColor: Colors.green,
+                                      ),
                                     );
-                                    
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    
-                                    if (result['success']) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(result['message']),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const Homepage(),
-                                        ),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(result['message']),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const Homepage(),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message']),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
                                   }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF800000),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
+                                }
+                              },
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF800000),
+                                Color(0xFFA52A2A),
+                              ],
                             ),
-                            elevation: 0,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF800000).withOpacity(0.35),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFF800000).withOpacity(0.15),
+                                blurRadius: 40,
+                                offset: const Offset(0, 12),
+                                spreadRadius: 8,
+                              ),
+                            ],
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
+                          child: Center(
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
                                 )
-                              : Text(
-                                  _selectedLanguage == 'English'
-                                      ? 'Sign In'
-                                      : 'Ingia',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                : Text(
+                                    _selectedLanguage == 'English'
+                                        ? 'Sign In'
+                                        : 'Ingia',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -406,28 +427,27 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+      ),
     );
   }
 
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: Colors.transparent,
-      child: AnimatedBackground(
-        numberOfDots: 30,
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with Logo
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade200),
-                  ),
+      backgroundColor: Colors.white,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with Logo
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
                 ),
+              ),
                 child: Column(
                   children: [
                     Image.asset(
@@ -510,7 +530,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-      ),
     );
   }
 
@@ -519,33 +538,23 @@ class _LoginPageState extends State<LoginPage> {
     required String action,
     required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        subtitle: Text(
-          action,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF800000),
-          ),
-        ),
-        onTap: onTap,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade600,
         ),
       ),
+      subtitle: Text(
+        action,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF800000),
+        ),
+      ),
+      onTap: onTap,
     );
   }
 }

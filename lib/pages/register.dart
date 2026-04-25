@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:duka_app/l10n/app_localizations.dart';
 import 'package:duka_app/main.dart';
 import 'package:duka_app/services/auth_service.dart';
-import 'package:duka_app/widgets/animated_background.dart';
+import 'package:duka_app/widgets/image_background.dart';
 import 'login.dart';
 import 'homepage.dart';
 
@@ -54,14 +54,14 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: AnimatedBackground(
+      body: ImageBackground(
         child: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 const SizedBox(height: 20),
                 // Back button
                 Row(
@@ -200,91 +200,111 @@ class _RegisterPageState extends State<RegisterPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      // Register Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    if (!_agreeToTerms) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            _selectedLanguage == 'English'
-                                                ? 'Please agree to Terms of Service'
-                                                : 'Tafadhali kubali Masharti ya Huduma',
-                                          ),
+                      // Landing Style Register Button
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : () async {
+                                if (_formKey.currentState!.validate()) {
+                                  if (!_agreeToTerms) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          _selectedLanguage == 'English'
+                                              ? 'Please agree to Terms of Service'
+                                              : 'Tafadhali kubali Masharti ya Huduma',
                                         ),
-                                      );
-                                      return;
-                                    }
-                                    
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    
-                                    final result = await _authService.register(
-                                      username: _fullNameController.text.trim(),
-                                      shopName: _shopNameController.text.trim(),
-                                      phone: _phoneController.text.trim(),
-                                      email: _emailController.text.trim(),
-                                      password: _passwordController.text,
+                                      ),
                                     );
-                                    
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    
-                                    if (result['success']) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(result['message']),
-                                          backgroundColor: Color(0xFF800000),
-                                        ),
-                                      );
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const Homepage(),
-                                        ),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(result['message']),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
+                                    return;
                                   }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF800000),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
+                                  
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  
+                                  final result = await _authService.register(
+                                    username: _fullNameController.text.trim(),
+                                    shopName: _shopNameController.text.trim(),
+                                    phone: _phoneController.text.trim(),
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text,
+                                  );
+                                  
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  
+                                  if (result['success']) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message']),
+                                        backgroundColor: Color(0xFF800000),
+                                      ),
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const Homepage(),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message']),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF800000),
+                                Color(0xFFA52A2A),
+                              ],
                             ),
-                            elevation: 0,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF800000).withOpacity(0.35),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFF800000).withOpacity(0.15),
+                                blurRadius: 40,
+                                offset: const Offset(0, 12),
+                                spreadRadius: 8,
+                              ),
+                            ],
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          child: Center(
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    _selectedLanguage == 'English' ? 'Register' : 'Jisajili',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                )
-                              : Text(
-                                  _selectedLanguage == 'English' ? 'Register' : 'Jisajili',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),

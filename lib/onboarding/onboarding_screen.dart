@@ -58,7 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFFDF5F5),
       body: SafeArea(
         child: Column(
           children: [
@@ -72,8 +72,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: const Text(
                     'Skip',
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: Color(0xFF800000),
                       fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -81,12 +82,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
 
             // Logo - text only
-            const Text(
-              'Elanledgers',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1565C0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF800000),
+                    Color(0xFFA52A2A),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF800000).withOpacity(0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 2,
+                  ),
+                  BoxShadow(
+                    color: Color(0xFF800000).withOpacity(0.1),
+                    blurRadius: 40,
+                    offset: const Offset(0, 12),
+                    spreadRadius: 8,
+                  ),
+                ],
+              ),
+              child: const Text(
+                'Elanledgers',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
 
@@ -127,7 +154,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         width: _currentPage == index ? 24 : 6,
                         decoration: BoxDecoration(
                           color: _currentPage == index
-                              ? const Color(0xFF1565C0)
+                              ? const Color(0xFF800000)
                               : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(3),
                         ),
@@ -136,27 +163,154 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
 
                   // Next button
-                  GestureDetector(
+                  // Animated Next Button
+                  AnimatedArrowButton(
                     onTap: _nextPage,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1565C0),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
+                    currentPage: _currentPage,
+                    totalPages: _pages.length,
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Animated Arrow Button with Landing Style
+class AnimatedArrowButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final int currentPage;
+  final int totalPages;
+
+  const AnimatedArrowButton({
+    Key? key,
+    required this.onTap,
+    required this.currentPage,
+    required this.totalPages,
+  }) : super(key: key);
+
+  @override
+  State<AnimatedArrowButton> createState() => _AnimatedArrowButtonState();
+}
+
+class _AnimatedArrowButtonState extends State<AnimatedArrowButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _slideAnimation = Tween<double>(
+      begin: 0,
+      end: 8,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isLastPage = widget.currentPage == widget.totalPages - 1;
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF800000),
+                    Color(0xFFA52A2A),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF800000).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 2,
+                  ),
+                  BoxShadow(
+                    color: const Color(0xFF800000).withOpacity(0.1),
+                    blurRadius: 40,
+                    offset: const Offset(0, 12),
+                    spreadRadius: 8,
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Animated arrow sliding
+                  Transform.translate(
+                    offset: Offset(_slideAnimation.value, 0),
+                    child: Icon(
+                      isLastPage ? Icons.check : Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                  // Ripple effect circles
+                  ...List.generate(3, (index) {
+                    final delay = index * 0.3;
+                    final progress = ((_controller.value + delay) % 1.0);
+                    return Opacity(
+                      opacity: (1 - progress) * 0.3,
+                      child: Transform.scale(
+                        scale: 1 + (progress * 0.5),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.5),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

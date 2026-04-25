@@ -73,7 +73,7 @@ class OnboardingPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Color(0xFF800000),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -82,7 +82,7 @@ class OnboardingPage extends StatelessWidget {
                     data.description,
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                       height: 1.6,
                     ),
                     textAlign: TextAlign.center,

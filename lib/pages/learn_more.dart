@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:duka_app/widgets/animated_background.dart';
+import 'package:duka_app/widgets/image_background.dart';
 
 class LearnMorePage extends StatefulWidget {
   const LearnMorePage({Key? key}) : super(key: key);
@@ -38,7 +38,7 @@ class _LearnMorePageState extends State<LearnMorePage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: AnimatedBackground(
+      body: ImageBackground(
         child: CustomScrollView(
           slivers: [
             // App Bar

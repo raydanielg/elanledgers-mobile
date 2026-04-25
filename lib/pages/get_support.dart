@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:duka_app/widgets/animated_background.dart';
+import 'package:duka_app/widgets/image_background.dart';
 
 class SupportMessage {
   final String text;
@@ -139,8 +139,7 @@ class _GetSupportPageState extends State<GetSupportPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F8),
-      body: AnimatedBackground(
-        numberOfDots: 25,
+      body: ImageBackground(
         child: Column(
           children: [
             // Header

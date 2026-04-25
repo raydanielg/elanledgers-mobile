@@ -196,6 +196,38 @@ class DashboardService {
     }
   }
 
+  // Get invoice summary
+  Future<Map<String, dynamic>> getInvoiceSummary() async {
+    try {
+      final response = await _api.get('/app/get/getdata/invoice_summary');
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Get order summary
+  Future<Map<String, dynamic>> getOrderSummary() async {
+    try {
+      final response = await _api.get('/app/get/getdata/order_summary');
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
   // Get profit summary
   Future<Map<String, dynamic>> getProfitSummary() async {
     try {
